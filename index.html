@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>客服小美</title>
+<style>
+  :root {
+    --primary: #f06292;
+    --primary-dark: #e91e63;
+    --bg: #f7f5f7;
+    --card: #ffffff;
+    --text: #333;
+    --muted: #999;
+    --border: #eee;
+    --bot-bubble: #ffffff;
+    --user-bubble: linear-gradient(135deg, #f06292, #ec5f8f);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    position: fixed;
+    inset: 0;
+  }
+  .app { width: 100%; max-width: 720px; display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+  header {
+    background: linear-gradient(135deg, #f06292, #e91e63);
+    color: #fff;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 12px rgba(233, 30, 99, .2);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+  }
+  .avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(255,255,255,.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .title { font-size: 16px; font-weight: 600; }
+  .subtitle { font-size: 12px; opacity: .85; margin-top: 2px; }
+  #chat { flex: 1; overflow-y: auto; padding: 18px 16px 90px; }
+  .msg { display: flex; margin-bottom: 14px; align-items: flex-start; gap: 8px; }
+  .msg .avatar-mini {
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; background: #fce4ec; color: #e91e63;
+  }
+  .msg.user .avatar-mini { background: #e91e63; color: #fff; }
+  .msg .content { max-width: 78%; display: flex; flex-direction: column; gap: 6px; }
+  .msg .bubble {
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 14.5px;
+    line-height: 1.6;
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+  .msg.bot { justify-content: flex-start; }
+  .msg.bot .bubble { background: var(--bot-bubble); border: 1px solid var(--border); border-top-left-radius: 4px; }
+  .msg.user { justify-content: flex-end; }
+  .msg.user .bubble { background: var(--user-bubble); color: #fff; border-top-right-radius: 4px; }
+  .msg .attachment {
+    background: var(--bot-bubble); border: 1px solid var(--border); border-radius: 10px;
+    padding: 8px; display: flex; align-items: center; gap: 10px; max-width: 260px;
+  }
+  .msg.user .attachment { background: rgba(255,255,255,.15); border-color: transparent; color: #fff; }
+  .msg .attachment img { max-width: 220px; max-height: 220px; border-radius: 8px; display: block; }
+  .msg .attachment .file-ico { font-size: 26px; flex-shrink: 0; }
+  .msg .attachment .file-name { font-size: 12.5px; word-break: break-all; }
+  .msg .attachment audio { width: 200px; height: 36px; }
+  .typing { opacity: .6; }
+  .typing .dots::after { content: '…'; animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity: .2; } }
+  footer {
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    display: flex; gap: 8px; align-items: flex-end;
+    flex-shrink: 0;
+  }
+  .tool-btn {
+    width: 38px; height: 38px; border-radius: 50%; border: none;
+    background: #f5f0f2; color: #888; font-size: 17px; cursor: pointer;
+    flex-shrink: 0; transition: all .15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tool-btn:hover { background: #fce4ec; color: var(--primary-dark); }
+  .tool-btn.recording { background: #e91e63; color: #fff; animation: pulse 1.2s infinite; }
+  @keyframes pulse { 50% { transform: scale(1.12); } }
+  #input {
+    flex: 1; border: 1px solid var(--border); border-radius: 22px;
+    padding: 9px 16px; font-size: 14.5px; outline: none;
+    resize: none; max-height: 120px; line-height: 1.5;
+    font-family: inherit;
+  }
+  #input:focus { border-color: var(--primary); }
+  #send {
+    background: var(--primary); color: #fff; border: none;
+    border-radius: 22px; padding: 10px 20px; font-size: 14.5px;
+    cursor: pointer; flex-shrink: 0;
+    transition: background .15s;
+  }
+  #send:hover { background: var(--primary-dark); }
+  #send:disabled { opacity: .5; cursor: not-allowed; }
+  #pending {
+    display: none; background: var(--card); border-top: 1px solid var(--border);
+    padding: 8px 16px; font-size: 13px; color: #555; gap: 8px; align-items: center;
+    flex-wrap: wrap; flex-shrink: 0;
+  }
+  #pending.show { display: flex; }
+  .pending-item {
+    background: #fce4ec; color: #c2185b; border-radius: 14px; padding: 3px 12px;
+    font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .pending-item .x { cursor: pointer; font-weight: 700; opacity: .7; }
+  .pending-item .x:hover { opacity: 1; }
+  .welcome {
+    text-align: center; color: var(--muted); font-size: 13px;
+    padding: 40px 20px 20px;
+  }
+  .welcome .logo { font-size: 46px; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="avatar">💁‍♀️</div>
+    <div>
+      <div class="title">客服小美</div>
+      <div class="subtitle">在线 · 有问必答 · 支持图片/文件/语音</div>
+    </div>
+  </header>
+  <div id="chat">
+    <div class="welcome">
+      <div class="logo">💁‍♀️</div>
+      你好呀，我是客服小美～<br>文字、图片、文件、语音都可以发给我！随时为你解答。
+    </div>
+  </div>
+  <div id="pending"></div>
+  <footer>
+    <button class="tool-btn" id="btnImg" title="发图片">🖼️</button>
+    <button class="tool-btn" id="btnFile" title="发文件">📎</button>
+    <button class="tool-btn" id="btnVoice" title="按住说话">🎤</button>
+    <textarea id="input" rows="1" placeholder="请输入你的问题…" enterkeyhint="send"></textarea>
+    <button id="send">发送</button>
+    <input type="file" id="fileImg" accept="image/*" hidden>
+    <input type="file" id="fileAny" hidden>
+  </footer>
+</div>
+
+<script>
+// 移动端高度兜底：100vh/dvh 在 webview 可能不准，用 innerHeight 修正。
+// 只响应宽度变化（横竖屏/设备切换），键盘弹出引起的竖向 resize 不处理，避免页面跳动
+(function fitHeight() {
+  const app = document.querySelector('.app');
+  let lastW = window.innerWidth;
+  const set = (force) => {
+    if (force || Math.abs(window.innerWidth - lastW) > 80) {
+      app.style.height = window.innerHeight + 'px';
+      lastW = window.innerWidth;
+    }
+  };
+  window.addEventListener('resize', () => set(false));
+  window.addEventListener('orientationchange', () => setTimeout(() => set(true), 100));
+  set(true);
+})();
+
+// 键盘弹出时：隐藏顶部标题栏、窗口收缩贴键盘（更矮），收起后恢复
+(function fitKeyboard() {
+  const app = document.querySelector('.app');
+  const header = document.querySelector('header');
+  const vv = window.visualViewport;
+  if (!vv) return;
+  const update = () => {
+    const h = vv.height;
+    const fullH = window.innerHeight;
+    if (h >= fullH - 50) {          // 键盘收起（可视高度≈全高）
+      app.style.height = fullH + 'px';
+      header.style.display = '';
+    } else {                        // 键盘弹出（可视高度明显小于全高）
+      app.style.height = h + 'px';
+      header.style.display = 'none';
+    }
+  };
+  vv.addEventListener('resize', update);
+  window.addEventListener('resize', update);
+  update();
+})();
+
+const chatEl = document.getElementById('chat');
+const inputEl = document.getElementById('input');
+const sendEl = document.getElementById('send');
+const pendingEl = document.getElementById('pending');
+const btnImg = document.getElementById('btnImg');
+const btnFile = document.getElementById('btnFile');
+const btnVoice = document.getElementById('btnVoice');
+const fileImg = document.getElementById('fileImg');
+const fileAny = document.getElementById('fileAny');
+
+let sessionId = localStorage.getItem('xiaomei_session') || null;
+let pendingParts = [];   // [{type, attachment_id, filename, url?, kind}]
+let mediaRec = null;
+let recChunks = [];
+
+// ---- 聊天记录本地保存（刷新恢复）----
+const HISTORY_KEY = 'xiaomei_history';
+let history = [];
+try { history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]') || []; } catch (e) { history = []; }
+
+function saveHistory() {
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(-100))); } catch (e) {}
+}
+
+function renderHistory() {
+  history.forEach(item => {
+    const content = addMsg(item.role, '');
+    if (item.attachments) {
+      item.attachments.forEach(a => {
+        const el = document.createElement('div');
+        el.className = 'attachment';
+        if (a.kind === 'image') el.innerHTML = '<span class="file-ico">🖼️</span><span class="file-name">图片</span>';
+        else if (a.kind === 'voice') el.innerHTML = '<span class="file-ico">🎤</span><span class="file-name">语音</span>';
+        else el.innerHTML = '<span class="file-ico">📎</span><span class="file-name">' + esc(a.filename || '文件') + '</span>';
+        content.appendChild(el);
+      });
+    }
+    if (item.text) {
+      const b = document.createElement('div');
+      b.className = 'bubble';
+      b.textContent = item.text;
+      content.appendChild(b);
+    }
+  });
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function esc(s) {
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderPending() {
+  pendingEl.innerHTML = '';
+  pendingEl.className = pendingParts.length ? 'show' : '';
+  pendingParts.forEach((p, i) => {
+    let label;
+    if (p.uploading) label = '⏳ 上传中…';
+    else if (p.kind === 'image') label = '🖼️ 图片';
+    else if (p.kind === 'voice') label = '🎤 语音';
+    else label = '📎 ' + (p.filename || '文件');
+    const el = document.createElement('span');
+    el.className = 'pending-item';
+    el.innerHTML = esc(label) + '<span class="x" data-i="' + i + '">✕</span>';
+    pendingEl.appendChild(el);
+  });
+  pendingEl.querySelectorAll('.x').forEach(x => x.onclick = () => {
+    pendingParts.splice(+x.dataset.i, 1);
+    renderPending();
+  });
+}
+
+function addMsg(role, html) {
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ' + role;
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar-mini';
+  avatar.textContent = role === 'bot' ? '💁‍♀️' : '我';
+  const content = document.createElement('div');
+  content.className = 'content';
+  content.innerHTML = html;
+  wrap.appendChild(avatar);
+  wrap.appendChild(content);
+  chatEl.appendChild(wrap);
+  chatEl.scrollTop = chatEl.scrollHeight;
+  return content;
+}
+
+function addTextBubble(role, text) {
+  const content = addMsg(role, '');
+  const b = document.createElement('div');
+  b.className = 'bubble';
+  b.textContent = text;
+  content.appendChild(b);
+  return b;
+}
+
+function addTyping() {
+  const content = addMsg('bot', '');
+  const b = document.createElement('div');
+  b.className = 'bubble dots';
+  b.textContent = '小美正在思考';
+  content.appendChild(b);
+  return content;
+}
+
+function autoResize() {
+  inputEl.style.height = 'auto';
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+}
+
+async function uploadFile(file) {
+  const fd = new FormData();
+  fd.append('file', file);
+  const resp = await fetch('/api/upload', { method: 'POST', body: fd });
+  const data = await resp.json();
+  if (!resp.ok || !data.attachment_id) throw new Error(data.error || '上传失败');
+  return data;
+}
+
+// 通用：先显示标记（上传中…），完成后填 attachment_id
+async function addPendingUpload(file, kind) {
+  const item = { type: kind === 'image' ? 'image' : 'file', kind, filename: file.name || '文件', uploading: true };
+  if (kind === 'image' || kind === 'voice') item.url = URL.createObjectURL(file);
+  pendingParts.push(item);
+  renderPending();
+  try {
+    const data = await uploadFile(file);
+    item.attachment_id = data.attachment_id;
+    item.type = data.type || item.type;
+    item.uploading = false;
+  } catch (e) {
+    const i = pendingParts.indexOf(item);
+    if (i >= 0) pendingParts.splice(i, 1);
+    alert('上传失败：' + e.message);
+  }
+  renderPending();
+}
+
+async function send() {
+  const text = inputEl.value.trim();
+  const hasPending = pendingParts.length > 0;
+  if ((!text && !hasPending) || sendEl.disabled) return;
+
+  // 用户消息渲染
+  const content = addMsg('user', '');
+  const parts = [...pendingParts];
+  if (text) {
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    b.textContent = text;
+    content.appendChild(b);
+  }
+  parts.forEach(p => {
+    if (p.kind === 'image' && p.url) {
+      const a = document.createElement('div');
+      a.className = 'attachment';
+      a.innerHTML = '<img src="' + p.url + '">';
+      content.appendChild(a);
+    } else if (p.kind === 'voice' && p.url) {
+      const a = document.createElement('div');
+      a.className = 'attachment';
+      a.innerHTML = '<audio controls src="' + p.url + '"></audio>';
+      content.appendChild(a);
+    } else {
+      const a = document.createElement('div');
+      a.className = 'attachment';
+      a.innerHTML = '<span class="file-ico">📎</span><span class="file-name">' + esc(p.filename || '文件') + '</span>';
+      content.appendChild(a);
+    }
+  });
+  history.push({ role: 'user', text: text || '', attachments: parts.map(p => ({ kind: p.kind || 'file', filename: p.filename })) });
+  saveHistory();
+  inputEl.value = '';
+  autoResize();
+  pendingParts = [];
+  renderPending();
+  chatEl.scrollTop = chatEl.scrollHeight;
+
+  const typingEl = addTyping();
+  sendEl.disabled = true;
+  try {
+    const resp = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, parts: parts, session_id: sessionId }),
+    });
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+    let answer = '';
+    let answerBubble = null;
+    let gotError = false;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data:')) continue;
+        const jsonStr = line.slice(5).trim();
+        if (!jsonStr) continue;
+        let evt;
+        try { evt = JSON.parse(jsonStr); } catch (e) { continue; }
+        if (evt.type === 'session_id' && evt.session_id) {
+          sessionId = evt.session_id;
+          localStorage.setItem('xiaomei_session', sessionId);
+        } else if (evt.type === 'plain' && typeof evt.data === 'string') {
+          if (!answerBubble) {
+            typingEl.remove();
+            answerBubble = addTextBubble('bot', '');
+          }
+          answer += evt.data;
+          answerBubble.textContent = answer;
+          chatEl.scrollTop = chatEl.scrollHeight;
+          // 会话失效/历史损坏：清本地 session，提示重试
+          if (/未找到|无效|不存在|expired|invalid/i.test(evt.data) && sessionId) {
+            gotError = true;
+          }
+        } else if (evt.type === 'end') {
+          if (!answerBubble) {
+            typingEl.remove();
+            addTextBubble('bot', '抱歉，小美暂时没有收到回复，请稍后再试～');
+          }
+          break;
+        }
+      }
+    }
+    // AI 回复完成后存入历史（循环外，只存一次）
+    if (answerBubble) {
+      history.push({ role: 'bot', text: answer, attachments: [] });
+      saveHistory();
+    }
+    if (gotError && sessionId) {
+      sessionId = null;
+      localStorage.removeItem('xiaomei_session');
+    }
+  } catch (e) {
+    typingEl.remove();
+    addTextBubble('bot', '网络开小差了，请刷新页面重试～');
+  } finally {
+    sendEl.disabled = false;
+    inputEl.focus();
+  }
+}
+
+// 图片上传
+btnImg.onclick = () => fileImg.click();
+fileImg.onchange = () => {
+  const file = fileImg.files[0];
+  fileImg.value = '';
+  if (file) addPendingUpload(file, 'image');
+};
+
+// 文件上传
+btnFile.onclick = () => fileAny.click();
+fileAny.onchange = () => {
+  const file = fileAny.files[0];
+  fileAny.value = '';
+  if (file) addPendingUpload(file, 'file');
+};
+
+// 语音输入：浏览器语音识别（Web Speech API）→ 文字进输入框
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let speechRec = null;
+let speechFinal = '';
+
+function initSpeech() {
+  if (!SpeechRecognition) {
+    btnVoice.style.display = 'none';
+    return;
+  }
+  speechRec = new SpeechRecognition();
+  speechRec.lang = 'zh-CN';
+  speechRec.interimResults = true;
+  speechRec.continuous = true;
+  speechRec.onresult = e => {
+    let interim = '';
+    speechFinal = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const r = e.results[i];
+      if (r.isFinal) speechFinal += r[0].transcript;
+      else interim += r[0].transcript;
+    }
+    inputEl.value = (speechFinal + ' ' + interim).trim();
+    autoResize();
+  };
+  speechRec.onend = () => {
+    btnVoice.classList.remove('recording');
+    btnVoice.title = '按住说话';
+    if (speechFinal) inputEl.value = speechFinal.trim();
+    speechRec = null;
+  };
+  speechRec.onerror = e => {
+    btnVoice.classList.remove('recording');
+    btnVoice.title = '按住说话';
+    speechRec = null;
+    if (e.error !== 'aborted') alert('语音识别失败：' + e.error);
+  };
+}
+
+function startSpeech() {
+  if (!SpeechRecognition) return;
+  if (!speechRec) initSpeech();
+  try {
+    speechFinal = '';
+    speechRec.start();
+    btnVoice.classList.add('recording');
+    btnVoice.title = '松开结束';
+  } catch (e) { /* already started */ }
+}
+function stopSpeech() {
+  if (speechRec) {
+    try { speechRec.stop(); } catch (e) {}
+  }
+}
+btnVoice.addEventListener('pointerdown', e => { e.preventDefault(); startSpeech(); });
+btnVoice.addEventListener('pointerup', stopSpeech);
+btnVoice.addEventListener('pointerleave', stopSpeech);
+initSpeech();
+
+sendEl.addEventListener('click', send);
+inputEl.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+});
+inputEl.addEventListener('input', autoResize);
+
+// 加载历史聊天记录
+if (history.length) {
+  // 清理旧版 bug 的残留：连续 bot 回复只留最后一条完整版（流式增量被多次保存）
+  const deduped = [];
+  for (const item of history) {
+    if (item.role === 'bot' && deduped.length && deduped[deduped.length - 1].role === 'bot') {
+      deduped[deduped.length - 1] = item; // 连续 bot 保留最新最完整的
+    } else {
+      deduped.push(item);
+    }
+  }
+  if (deduped.length !== history.length) {
+    history = deduped;
+    saveHistory();
+  }
+  const w = document.querySelector('.welcome');
+  if (w) w.remove();
+  renderHistory();
+}
+</script>
+</body>
+</html>
