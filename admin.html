@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>客服小美 · 运营后台</title>
+<style>
+:root{
+  --canvas:#f5f1ec; --surface:#ffffff; --ink:#111111; --ink-muted:#626260;
+  --ink-subtle:#7b7b78; --hairline:#d3cec6; --hairline-soft:#ebe7e1;
+  --accent:#ff5600; --error:#c41c1c; --success:#0bdf50;
+  --radius:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--canvas);color:var(--ink);font-size:15px;line-height:1.5}
+button{font-family:inherit;border:none;cursor:pointer}
+a{color:var(--accent);text-decoration:none}
+.hidden{display:none!important}
+
+/* 登录 */
+#login{max-width:360px;margin:12vh auto;background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radius);padding:28px}
+#login h1{font-size:20px;font-weight:600;margin-bottom:6px}
+#login p{color:var(--ink-muted);font-size:13px;margin-bottom:20px}
+#login input{width:100%;padding:11px 13px;border:1px solid var(--hairline);border-radius:8px;font-size:15px;margin-bottom:12px;outline:none}
+#login input:focus{border-color:var(--accent)}
+#login .btn{width:100%;background:var(--accent);color:#fff;padding:11px;border-radius:8px;font-size:15px;font-weight:600}
+#login .err{color:var(--error);font-size:13px;margin-bottom:12px;min-height:18px}
+
+/* 主界面 */
+#app{display:flex;min-height:100vh}
+.sidebar{width:210px;background:var(--canvas);border-right:1px solid var(--hairline);padding:18px 12px;flex-shrink:0}
+.sidebar .brand{font-size:15px;font-weight:700;padding:0 10px 16px}
+.sidebar .nav{display:flex;flex-direction:column;gap:2px}
+.sidebar .nav button{text-align:left;background:none;padding:9px 10px;border-radius:8px;color:var(--ink-muted);font-size:14px;font-weight:500}
+.sidebar .nav button:hover{background:var(--surface);color:var(--ink)}
+.sidebar .nav button.active{background:var(--surface);color:var(--ink);border:1px solid var(--hairline)}
+.sidebar .logout{margin-top:24px;background:none;color:var(--ink-subtle);font-size:13px;padding:8px 10px;text-align:left}
+.main{flex:1;padding:24px 28px;min-width:0}
+.main header h1{font-size:22px;font-weight:600;letter-spacing:-0.3px;margin-bottom:18px}
+.toolbar{display:flex;gap:10px;margin-bottom:16px;align-items:center}
+.toolbar input,.toolbar select{padding:8px 11px;border:1px solid var(--hairline);border-radius:8px;font-size:14px;background:var(--surface);outline:none}
+.toolbar input:focus{border-color:var(--accent)}
+.card{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radius);overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;padding:11px 14px;color:var(--ink-muted);font-weight:600;font-size:13px;border-bottom:1px solid var(--hairline-soft);background:var(--canvas)}
+td{padding:11px 14px;border-bottom:1px solid var(--hairline-soft);vertical-align:top;word-break:break-word}
+tr:hover td{background:#fbfaf8}
+.tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:500;background:var(--hairline-soft);color:var(--ink-muted)}
+.tag.cust{background:#e7f7ee;color:#0a7a37}
+.tag.ai{background:#ffe9dc;color:#c2410c}
+.tag.dis{background:var(--hairline-soft);color:var(--ink-subtle);text-decoration:line-through}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radius);padding:16px}
+.stat .num{font-size:26px;font-weight:700;letter-spacing:-0.5px}
+.stat .lbl{color:var(--ink-muted);font-size:13px;margin-top:2px}
+.pager{display:flex;gap:8px;align-items:center;padding:12px 14px;font-size:13px;color:var(--ink-muted)}
+.pager button{background:var(--surface);border:1px solid var(--hairline);border-radius:6px;padding:4px 10px;font-size:13px}
+.pager button:disabled{opacity:.4;cursor:not-allowed}
+.badge-dis{background:var(--hairline-soft);color:var(--ink-subtle);border:1px dashed var(--hairline);border-radius:8px;padding:8px 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.keywords{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.keyword{padding:5px 10px;background:var(--surface);border:1px solid var(--hairline);border-radius:20px;font-size:13px}
+.keyword b{color:var(--accent)}
+
+/* 移动端抽屉：汉堡按钮 + 遮罩 */
+.hamburger{display:none;background:none;font-size:20px;padding:6px 8px;margin-right:8px;color:var(--ink);line-height:1;cursor:pointer}
+.mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,.32);z-index:40}
+
+/* 移动端适配：侧栏可收起(抽屉)，内容区自适应 */
+@media (max-width:768px){
+  .hamburger{display:inline-block}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:200px;padding:16px 10px;transform:translateX(-100%);transition:transform .2s ease;z-index:50;box-shadow:2px 0 10px rgba(0,0,0,.10)}
+  .sidebar.open{transform:translateX(0)}
+  .mask.show{display:block}
+  .sidebar .brand{font-size:14px;padding:0 8px 12px}
+  .sidebar .nav button{padding:9px 10px;font-size:14px}
+  .sidebar .logout{margin-top:20px;padding:6px 10px}
+  .main{padding:14px 12px}
+  .main header h1{font-size:18px;margin-bottom:10px}
+  .toolbar{flex-wrap:wrap}
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .card{overflow-x:auto}
+  table{min-width:520px}
+  #login{margin:10vh auto;padding:20px}
+}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <h1>客服小美 · 运营后台</h1>
+  <p>请输入管理密码登录（会话 24h 有效）</p>
+  <div class="err" id="err"></div>
+  <input id="pw" type="password" placeholder="管理密码" autocomplete="current-password">
+  <button class="btn" id="loginBtn">登 录</button>
+</div>
+
+<div id="app" class="hidden">
+  <div class="sidebar">
+    <div class="brand">客服小美</div>
+    <div class="nav">
+      <button data-tab="messages" class="active">会话记录</button>
+      <button data-tab="visitors">访客列表</button>
+      <button data-tab="dashboard">运营看板</button>
+    </div>
+    <button class="logout" id="logoutBtn">退出登录</button>
+  </div>
+  <div class="main">
+    <header><button class="hamburger" id="hamburger" aria-label="菜单">☰</button><h1 id="pageTitle">会话记录</h1></header>
+
+    <!-- 会话记录 -->
+    <section id="tab-messages">
+      <div class="toolbar">
+        <input id="kw" placeholder="关键词搜索">
+        <button class="btn" style="background:var(--accent);color:#fff;padding:8px 14px;border-radius:8px;font-weight:600" onclick="loadMessages(1)">搜索</button>
+        <span class="badge-dis">🔒 转人工 · 即将上线</span>
+      </div>
+      <div class="card"><table>
+        <thead><tr><th>方向</th><th>类型</th><th>内容</th><th>访客</th><th>时间</th></tr></thead>
+        <tbody id="msgBody"></tbody>
+      </table>
+      <div class="pager"><button id="msgPrev" onclick="loadMessages(page-1)">上一页</button><span id="msgPage"></span><button id="msgNext" onclick="loadMessages(page+1)">下一页</button></div></div>
+    </section>
+
+    <!-- 访客列表 -->
+    <section id="tab-visitors" class="hidden">
+      <div class="card"><table>
+        <thead><tr><th>访客 ID</th><th>首次</th><th>最近</th><th>消息数</th></tr></thead>
+        <tbody id="visitorBody"></tbody>
+      </table>
+      <div class="pager"><button id="visPrev" onclick="loadVisitors(vpage-1)">上一页</button><span id="visPage"></span><button id="visNext" onclick="loadVisitors(vpage+1)">下一页</button></div></div>
+    </section>
+
+    <!-- 运营看板 -->
+    <section id="tab-dashboard" class="hidden">
+      <div class="stat-grid" id="statGrid"></div>
+      <div class="card" style="padding:18px">
+        <h3 style="font-size:15px;font-weight:600;margin-bottom:10px">高频关键词（客户消息）</h3>
+        <div class="keywords" id="kwList"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="mask" id="mask"></div>
+
+<script>
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let page = 1, vpage = 1, V = 50;
+const $ = s => document.querySelector(s);
+const api = async (path) => {
+  const r = await fetch('/admin/api/' + path, { credentials: 'include' });
+  if (r.status === 401) { showLogin(); throw new Error('unauth'); }
+  return r.json();
+};
+
+function showLogin(){ $('#login').classList.remove('hidden'); $('#app').classList.add('hidden'); }
+async function tryLogin(){
+  const p = $('#pw').value;
+  const r = await fetch('/admin/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({password:p}) });
+  if (r.ok){ $('#err').textContent=''; $('#app').classList.remove('hidden'); $('#login').classList.add('hidden'); loadForTab(currentTab); }
+  else { $('#err').textContent = r.status===429 ? '尝试过于频繁，请稍后再试' : '密码错误'; }
+}
+$('#loginBtn').onclick = tryLogin;
+$('#pw').addEventListener('keydown', e => { if(e.key==='Enter') tryLogin(); });
+$('#logoutBtn').onclick = async () => { await fetch('/admin/logout',{method:'POST'}); showLogin(); };
+
+let currentTab = 'messages';
+function switchTab(t){
+  currentTab = t;
+  document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('active', b.dataset.tab===t));
+  document.querySelectorAll('section[id^=tab-]').forEach(s => s.classList.add('hidden'));
+  $('#tab-'+t).classList.remove('hidden');
+  const titles = {messages:'会话记录', visitors:'访客列表', dashboard:'运营看板'};
+  $('#pageTitle').textContent = titles[t];
+  loadForTab(t);
+}
+document.querySelectorAll('.nav button').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+
+async function loadForTab(t){
+  if (t==='messages') loadMessages(page);
+  else if (t==='visitors') loadVisitors(vpage);
+  else if (t==='dashboard') loadDashboard();
+}
+
+async function loadMessages(p){
+  page = p || 1;
+  const kw = $('#kw').value.trim();
+  const data = await api(`messages?keyword=${encodeURIComponent(kw)}&page=${page}&limit=${V}`);
+  $('#msgBody').innerHTML = data.data.map(m =>
+    `<tr><td><span class="tag ${m.direction==='customer'?'cust':'ai'}">${m.direction==='customer'?'客户':'小美'}</span></td>` +
+    `<td>${esc(m.msg_type)}</td><td>${esc(m.content)}</td><td>${esc(m.visitor_id)}</td><td style="white-space:nowrap;color:var(--ink-subtle)">${esc(m.created_at)}</td></tr>`
+  ).join('') || `<tr><td colspan="5" style="text-align:center;color:var(--ink-subtle)">暂无消息</td></tr>`;
+  $('#msgPage').textContent = `第 ${page} 页`;
+  $('#msgPrev').disabled = page===1; $('#msgNext').disabled = data.data.length < V;
+}
+
+async function loadVisitors(p){
+  vpage = p || 1;
+  const data = await api(`visitors?page=${vpage}&limit=${V}`);
+  $('#visitorBody').innerHTML = data.data.map(v =>
+    `<tr><td style="font-family:monospace">${esc(v.visitor_id)}</td><td>${esc(v.first_seen)}</td><td>${esc(v.last_seen)}</td><td>${v.msg_count}</td></tr>`
+  ).join('') || `<tr><td colspan="4" style="text-align:center;color:var(--ink-subtle)">暂无访客</td></tr>`;
+  $('#visPage').textContent = `第 ${vpage} 页`;
+  $('#visPrev').disabled = vpage===1; $('#visNext').disabled = data.data.length < V;
+}
+
+async function loadDashboard(){
+  const s = await api('stats');
+  const cards = [
+    ['visitors','累计访客'], ['sessions','累计会话'], ['messages','累计消息'],
+    ['today_msgs','今日消息'], ['today_visitors','今日访客'], ['attachments','上传附件']
+  ];
+  $('#statGrid').innerHTML = cards.map(c => `<div class="stat"><div class="num">${s[c[0]]}</div><div class="lbl">${c[1]}</div></div>`).join('');
+  $('#kwList').innerHTML = (s.top_keywords||[]).map(([k,n]) => `<span class="keyword">${esc(k)} <b>${n}</b></span>`).join('') || '<span style="color:var(--ink-subtle)">暂无关键词</span>';
+}
+
+// 移动端抽屉：汉堡开关 + 遮罩关闭
+const ham = document.getElementById('hamburger'), mask = document.getElementById('mask');
+if (ham) ham.addEventListener('click', () => { document.querySelector('.sidebar').classList.toggle('open'); mask.classList.toggle('show'); });
+if (mask) mask.addEventListener('click', () => { document.querySelector('.sidebar').classList.remove('open'); mask.classList.remove('show'); });
+
+// 启动
+(async () => {
+  try { await api('visitors'); $('#app').classList.remove('hidden'); $('#login').classList.add('hidden'); loadForTab('messages'); }
+  catch(e) { showLogin(); }
+})();
+</script>
+</body>
+</html>
