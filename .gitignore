@@ -1,0 +1,11 @@
+# 数据与密钥
+*.db
+*.db-*
+.env
+.admin_password
+.admin_secret
+
+# 备份与缓存
+*.bak
+__pycache__/
+*.pyc
