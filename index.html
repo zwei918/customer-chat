@@ -208,6 +208,8 @@ const btnVoice = document.getElementById('btnVoice');
 const fileImg = document.getElementById('fileImg');
 const fileAny = document.getElementById('fileAny');
 
+let visitorId = localStorage.getItem('xiaomei_visitor');
+if (!visitorId) { visitorId = crypto.randomUUID(); localStorage.setItem('xiaomei_visitor', visitorId); }
 let sessionId = localStorage.getItem('xiaomei_session') || null;
 let pendingParts = [];   // [{type, attachment_id, filename, url?, kind}]
 let mediaRec = null;
@@ -311,7 +313,7 @@ function autoResize() {
 async function uploadFile(file) {
   const fd = new FormData();
   fd.append('file', file);
-  const resp = await fetch('/api/upload', { method: 'POST', body: fd });
+  const resp = await fetch('/api/upload', { method: 'POST', headers: { 'X-Visitor-Id': visitorId }, body: fd });
   const data = await resp.json();
   if (!resp.ok || !data.attachment_id) throw new Error(data.error || '上传失败');
   return data;
@@ -381,7 +383,7 @@ async function send() {
   try {
     const resp = await fetch('/api/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Visitor-Id': visitorId },
       body: JSON.stringify({ message: text, parts: parts, session_id: sessionId }),
     });
     const reader = resp.body.getReader();
