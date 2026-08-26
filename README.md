@@ -6,8 +6,14 @@
 
 ```
 客户浏览器 → https://chat.okva.cc → wsl2 tunnel → FastAPI 服务(:6200)
-    ├── GET /        聊天页（客服小美 UI）
-    └── POST /api/chat  代理 → AstrBot OpenAPI /api/v1/chat (ApiKey) → SSE 流式回显
+    ├── GET /        聊天页（客服小美 UI，Host=chat → index.html）
+    ├── POST /api/chat  代理 → AstrBot OpenAPI /api/v1/chat (ApiKey) → SSE 流式回显
+    └── POST /api/upload 代理 → AstrBot /api/v1/file（附件）
+
+运营后台 → https://admin01.okva.cc → wsl2 tunnel → 同服务 :6200
+    ├── GET /        后台页（Host=admin01 → admin.html）
+    └── /admin/api/* 会话/访客/看板查询（登录 cookie 鉴权）
+        └── SQLite data.db（visitors/sessions/messages 三表落库）
 ```
 
 - AstrBot 容器：WSL2 宝塔 `/www/wwwroot/astrbot/`（:6185）
@@ -21,6 +27,18 @@
 - 文件上传（小美能感知附件；读取文件内容需装文档解析插件或让客户粘贴文字）
 - 语音输入（按住说话，浏览器 Web Speech API 转文字；Chrome/Edge 支持，不支持时按钮自动隐藏）
 - 会话保持 + 聊天记录本地保存（localStorage `xiaomei_history` 存 100 条，刷新恢复；换设备/清缓存会丢显示记录，AI 上下文仍在服务端）
+
+## 管理后台（admin01.okva.cc）
+
+运营侧聊天业务后台，与聊天页同服务（按 Host 分流），登录后查看：
+
+- **会话记录** — 全部对话（客户/小美标注），按关键词/访客/时间筛选、分页
+- **访客列表** — 匿名访客（浏览器 `crypto.randomUUID()` → `X-Visitor-Id` header），谁来过、聊几轮、消息数
+- **运营看板** — 累计/今日访客、会话、消息、附件数 + 高频关键词
+- **转人工** — 预留（sessions.status='active'|'handoff' + 后台按钮 disabled"即将上线"），本期未启用
+
+数据层：SQLite `data.db`（WAL），`db.py` 三表（visitors/sessions/messages）+ 索引 + 落库，管理员 cookie 鉴权（HttpOnly/Secure + 登录限速）。
+后台登录密码：服务器 `/www/wwwroot/chat-xiaomei/.admin_password`（环境变量 `ADMIN_PASSWORD`）。
 
 ## 部署
 
