@@ -3,226 +3,1955 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>客服小美 · 运营后台</title>
+<meta name="theme-color" content="#212631">
+<meta name="robots" content="noindex, nofollow">
+<title>运营中台</title>
 <style>
 :root{
-  --canvas:#f5f1ec; --surface:#ffffff; --ink:#111111; --ink-muted:#626260;
-  --ink-subtle:#7b7b78; --hairline:#d3cec6; --hairline-soft:#ebe7e1;
-  --accent:#ff5600; --error:#c41c1c; --success:#0bdf50;
-  --radius:10px;
+  --sidebar:#212631; --sidebar-line:#323a49; --sidebar-text:rgba(255,255,255,.87);
+  --sidebar-muted:rgba(255,255,255,.38); --sidebar-active:rgba(135,145,175,.1);
+  --canvas:#ebedef; --surface:#fff; --ink:#252b36; --ink-muted:rgba(37,43,54,.68);
+  --fill:#f3f4f7; --hairline:#dbdfe6; --hairline-soft:#e4e7ea;
+  --action:#321fdb; --action-press:#2b1bc0; --error:#e55353; --live:#1b9e3e;
+  --info:#39f; --warning:#f9b115; --accent:#5856d6;
+  --topbar-h:65px; --sidebar-w:256px; --aside-w:320px;
+  --radius:6px; --ease:cubic-bezier(0.22, 1, 0.36, 1);
+  --shadow:0 1px 2px rgba(0,0,21,.08);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--canvas);color:var(--ink);font-size:15px;line-height:1.5}
+::selection{background:rgba(50,31,219,.18)}
+:focus-visible{outline:2px solid var(--action);outline-offset:2px}
+body{
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Helvetica Neue",sans-serif;
+  background:var(--canvas);color:var(--ink);font-size:16px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
 button{font-family:inherit;border:none;cursor:pointer}
-a{color:var(--accent);text-decoration:none}
+a{color:var(--action);text-decoration:none}
 .hidden{display:none!important}
+.skip{
+  position:absolute;left:12px;top:-40px;z-index:80;
+  background:var(--ink);color:#fff;padding:8px 12px;border-radius:var(--radius);
+  font-size:13px;text-decoration:none;
+}
+.skip:focus{top:12px}
+#toast{
+  display:none;position:fixed;left:50%;bottom:32px;transform:translateX(-50%);
+  background:var(--ink);color:#fff;font-size:13px;padding:10px 16px;
+  border-radius:var(--radius);z-index:90;max-width:min(90vw,420px);text-align:center;
+}
+#toast.show{display:block}
 
-/* 登录 */
-#login{max-width:360px;margin:12vh auto;background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radius);padding:28px}
-#login h1{font-size:20px;font-weight:600;margin-bottom:6px}
-#login p{color:var(--ink-muted);font-size:13px;margin-bottom:20px}
-#login input{width:100%;padding:11px 13px;border:1px solid var(--hairline);border-radius:8px;font-size:15px;margin-bottom:12px;outline:none}
-#login input:focus{border-color:var(--accent)}
-#login .btn{width:100%;background:var(--accent);color:#fff;padding:11px;border-radius:8px;font-size:15px;font-weight:600}
+#login{
+  max-width:400px;margin:18vh auto;background:var(--surface);
+  border:1px solid var(--hairline);border-radius:8px;
+  padding:36px 32px;box-shadow:var(--shadow);
+}
+#login h1{font-size:24px;font-weight:600;letter-spacing:-.3px;margin-bottom:8px}
+#login p{color:var(--ink-muted);font-size:15px;margin-bottom:24px}
+#login input{
+  width:100%;padding:10px 12px;border:1px solid var(--hairline);border-radius:var(--radius);
+  font-size:16px;margin-bottom:12px;outline:none;background:var(--surface);color:var(--ink);
+  font-family:inherit;
+}
+#login input:focus{border-color:var(--action);box-shadow:0 0 0 3px rgba(50,31,219,.18)}
+#login .btn{
+  width:100%;background:var(--action);color:#fff;padding:10px;
+  border-radius:var(--radius);font-size:16px;font-weight:600;
+}
+#login .btn:hover{background:var(--action-press)}
+#login .btn:disabled{opacity:.45;cursor:not-allowed}
 #login .err{color:var(--error);font-size:13px;margin-bottom:12px;min-height:18px}
 
-/* 主界面 */
-#app{display:flex;min-height:100vh}
-.sidebar{width:210px;background:var(--canvas);border-right:1px solid var(--hairline);padding:18px 12px;flex-shrink:0}
-.sidebar .brand{font-size:15px;font-weight:700;padding:0 10px 16px}
-.sidebar .nav{display:flex;flex-direction:column;gap:2px}
-.sidebar .nav button{text-align:left;background:none;padding:9px 10px;border-radius:8px;color:var(--ink-muted);font-size:14px;font-weight:500}
-.sidebar .nav button:hover{background:var(--surface);color:var(--ink)}
-.sidebar .nav button.active{background:var(--surface);color:var(--ink);border:1px solid var(--hairline)}
-.sidebar .logout{margin-top:24px;background:none;color:var(--ink-subtle);font-size:13px;padding:8px 10px;text-align:left}
-.main{flex:1;padding:24px 28px;min-width:0}
-.main header h1{font-size:22px;font-weight:600;letter-spacing:-0.3px;margin-bottom:18px}
-.toolbar{display:flex;gap:10px;margin-bottom:16px;align-items:center}
-.toolbar input,.toolbar select{padding:8px 11px;border:1px solid var(--hairline);border-radius:8px;font-size:14px;background:var(--surface);outline:none}
-.toolbar input:focus{border-color:var(--accent)}
-.card{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radius);overflow:hidden}
+#app{display:flex;min-height:100dvh}
+.sidebar{
+  width:var(--sidebar-w);background:var(--sidebar);color:var(--sidebar-text);
+  border-right:1px solid var(--sidebar-line);flex-shrink:0;
+  display:flex;flex-direction:column;min-height:100dvh;transition:width .2s var(--ease);
+}
+.sidebar.collapsed{width:0;min-width:0;border:0;overflow:hidden}
+.sidebar-head{
+  min-height:var(--topbar-h);padding:16px;display:flex;align-items:center;
+  justify-content:space-between;gap:8px;border-bottom:1px solid var(--sidebar-line);
+}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand-mark{
+  width:32px;height:32px;border-radius:8px;background:#321fdb;color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;
+  overflow:hidden;flex-shrink:0;
+}
+.brand-mark img{width:100%;height:100%;object-fit:cover;display:block}
+.brand-name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar-close{
+  display:none;width:32px;height:32px;border-radius:var(--radius);
+  background:transparent;opacity:.5;padding:8px;
+}
+.sidebar-close:hover{opacity:1;background:rgba(255,255,255,.08)}
+.sidebar-close img{width:16px;height:16px;display:block}
+.nav{padding:8px;display:flex;flex-direction:column;gap:1px;flex:1;overflow:auto}
+.nav-group{
+  font-size:12.8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--sidebar-muted);padding:16px 16px 8px;
+}
+.nav button{
+  text-align:left;background:none;padding:12px 16px;border-radius:var(--radius);
+  color:var(--sidebar-text);font-size:16px;font-weight:400;display:flex;align-items:center;gap:12px;
+  width:100%;
+}
+.nav button:hover{background:var(--sidebar-active)}
+.nav button.active{background:var(--sidebar-active);color:#fff}
+.nav button img{
+  width:20px;height:20px;display:block;flex-shrink:0;
+  filter:brightness(0) invert(1);opacity:.87;
+}
+.sidebar .logout{
+  margin:8px;background:none;color:var(--sidebar-muted);font-size:14px;
+  padding:12px 16px;text-align:left;border-radius:var(--radius);
+}
+.sidebar .logout:hover{color:#fff;background:var(--sidebar-active)}
+
+.shell{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--canvas)}
+.header{
+  background:var(--surface);border-bottom:1px solid var(--hairline);flex-shrink:0;
+}
+.topbar{
+  height:65px;display:flex;align-items:center;padding:0 24px;gap:0;
+}
+.hamburger{
+  width:44px;height:38px;margin-left:-14px;border-radius:var(--radius);background:none;
+  display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.hamburger:hover{background:#f3f4f7}
+.hamburger img{width:20px;height:20px;display:block}
+.hdr-search{
+  display:flex;align-items:center;height:38px;width:169px;margin-left:10px;
+  border:1px solid var(--hairline);border-radius:6px;padding:0 12px;background:#fff;flex-shrink:0;
+}
+.hdr-search img{width:18px;height:18px;display:block;flex-shrink:0}
+.hdr-search input{
+  width:72px;border:0;outline:none;background:transparent;font:inherit;font-size:16px;
+  color:var(--ink);padding:0 0 0 9px;letter-spacing:-.31px;
+}
+.hdr-search input::placeholder{color:var(--ink-muted)}
+.kbd{
+  display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;
+  padding:0 4px;margin-left:4px;background:#f3f4f7;border-radius:4px;
+  font-size:12px;color:var(--ink-muted);line-height:18px;
+}
+.kbd:first-of-type{margin-left:auto}
+.hdr-grow{flex:1}
+.hdr-notes{display:flex;align-items:center;margin-left:auto}
+.hdr-ico{
+  position:relative;width:52px;height:48px;background:none;border-radius:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.hdr-ico img{width:20px;height:20px;display:block}
+.hdr-ico:hover{background:#f3f4f7}
+.hdr-badge{
+  position:absolute;top:0;left:28px;min-width:24px;height:20px;padding:0 6px;
+  border-radius:800px;color:#fff;font-size:12px;font-weight:700;line-height:20px;text-align:center;
+}
+.hdr-badge.red{background:linear-gradient(41deg,#e55353,#d93737)}
+.hdr-badge.yellow{background:linear-gradient(41deg,#f9b115,#f6960b)}
+.hdr-badge.blue{background:linear-gradient(41deg,#39f,#2982cc)}
+.hdr-split{
+  width:17px;height:40px;position:relative;flex-shrink:0;
+}
+.hdr-split::after{
+  content:"";position:absolute;left:8px;top:4px;width:1px;height:32px;
+  background:rgba(37,43,54,.75);opacity:.25;
+}
+.hdr-tool{
+  width:36px;height:40px;padding:8px;background:none;
+  display:flex;align-items:center;justify-content:center;
+}
+.hdr-tool img{width:20px;height:20px;display:block}
+.hdr-tool:hover{background:#f3f4f7;border-radius:6px}
+.top-avatar{
+  width:40px;height:40px;margin:0 8px;border-radius:800px;background:#d8dbe0;color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;
+  overflow:hidden;cursor:pointer;border:0;padding:0;flex-shrink:0;
+}
+.top-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.crumb-bar{
+  height:48px;display:flex;align-items:center;padding:0 24px;
+  font-size:16px;color:var(--ink-muted);letter-spacing:-.31px;
+}
+.crumb-bar b{color:var(--ink);font-weight:600;margin-left:6px}
+
+.content{flex:1;padding:0 24px 24px;min-width:0;overflow:auto}
+.content h1{font-size:22px;font-weight:600;letter-spacing:-.3px;margin:16px 0}
+
+.toolbar{display:flex;gap:10px;margin-bottom:16px;align-items:center;flex-wrap:wrap}
+.toolbar input,.toolbar select{
+  padding:8px 12px;border:1px solid var(--hairline);border-radius:var(--radius);
+  font-size:15px;background:var(--surface);outline:none;color:var(--ink);font-family:inherit;
+}
+.toolbar input:focus{border-color:var(--action);box-shadow:0 0 0 3px rgba(50,31,219,.15)}
+.btn{
+  background:var(--action);color:#fff;padding:8px 14px;border-radius:var(--radius);
+  font-weight:600;font-size:15px;
+}
+.btn:hover{background:var(--action-press)}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;background:var(--surface);
+  border:1px solid var(--hairline);border-radius:var(--radius);padding:6px 10px;
+  font-size:13px;color:var(--ink);
+}
+.chip .x{
+  background:var(--fill);border:none;width:20px;height:20px;border-radius:50%;
+  color:var(--ink-muted);font-size:14px;line-height:1;display:inline-flex;
+  align-items:center;justify-content:center;padding:0;
+}
+.card{background:var(--surface);border:1px solid var(--hairline);border-radius:8px;overflow:hidden;position:relative;box-shadow:var(--shadow)}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.card.loading::after{
+  content:"加载中";position:absolute;inset:0;background:rgba(255,255,255,.72);
+  display:flex;align-items:center;justify-content:center;color:var(--ink-muted);font-size:13px;
+}
 table{width:100%;border-collapse:collapse;font-size:14px}
-th{text-align:left;padding:11px 14px;color:var(--ink-muted);font-weight:600;font-size:13px;border-bottom:1px solid var(--hairline-soft);background:var(--canvas)}
-td{padding:11px 14px;border-bottom:1px solid var(--hairline-soft);vertical-align:top;word-break:break-word}
-tr:hover td{background:#fbfaf8}
-.tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:500;background:var(--hairline-soft);color:var(--ink-muted)}
-.tag.cust{background:#e7f7ee;color:#0a7a37}
-.tag.ai{background:#ffe9dc;color:#c2410c}
-.tag.dis{background:var(--hairline-soft);color:var(--ink-subtle);text-decoration:line-through}
-.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:20px}
-.stat{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radius);padding:16px}
-.stat .num{font-size:26px;font-weight:700;letter-spacing:-0.5px}
-.stat .lbl{color:var(--ink-muted);font-size:13px;margin-top:2px}
-.pager{display:flex;gap:8px;align-items:center;padding:12px 14px;font-size:13px;color:var(--ink-muted)}
-.pager button{background:var(--surface);border:1px solid var(--hairline);border-radius:6px;padding:4px 10px;font-size:13px}
+th{
+  text-align:left;padding:12px 16px;color:var(--ink-muted);font-weight:600;
+  font-size:13px;border-bottom:1px solid var(--hairline);background:#f8f9fa;
+}
+td{padding:12px 16px;border-bottom:1px solid var(--hairline-soft);vertical-align:top;word-break:break-word}
+td.keep{white-space:nowrap;word-break:normal}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8f9fa}
+tr.clickable{cursor:pointer}
+.cell-content{
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;max-width:460px;
+}
+.vid{
+  background:none;color:var(--action);font:inherit;padding:0;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;
+}
+.vid:hover{text-decoration:underline}
+.tag{
+  display:inline-block;padding:2px 8px;border-radius:var(--radius);
+  font-size:12px;font-weight:500;background:var(--fill);color:var(--ink-muted);
+}
+.tag.cust{background:#cfe2ff;color:#052c65}
+.tag.ai{background:#e9ecef;color:var(--ink)}
+.kpi-grid{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;padding:24px 0 0;
+}
+.kpi{
+  height:164px;border-radius:6px;border:1px solid rgba(49,72,112,.18);
+  color:#fff;display:flex;flex-direction:column;overflow:hidden;min-width:0;cursor:pointer;text-align:left;
+}
+.kpi-head{display:flex;justify-content:space-between;align-items:flex-start;padding:16px 16px 0;flex:0 0 76px}
+.kpi-num{font-size:24px;font-weight:600;line-height:36px;letter-spacing:.07px}
+.kpi-pct{font-size:16px;font-weight:400;letter-spacing:-.31px;margin-left:6px}
+.kpi-lbl{font-size:16px;letter-spacing:-.31px;line-height:24px;margin-top:0}
+.kpi-spark{padding:8px 16px 16px;height:86px;display:flex;align-items:flex-end}
+.kpi-spark svg{width:100%;height:70px;display:block}
+.kpi-users{background:linear-gradient(27deg,#5856d6,#6f67db)}
+.kpi-income{background:linear-gradient(27deg,#3399ff,#2982cc)}
+.kpi-conv{background:linear-gradient(27deg,#f9b115,#f6960b)}
+.kpi-sess{background:linear-gradient(27deg,#e55353,#d93737)}
+.traffic{
+  margin-top:24px;background:var(--surface);border:1px solid var(--hairline);border-radius:6px;overflow:hidden;
+}
+.traffic-head{display:flex;justify-content:space-between;align-items:flex-start;padding:16px 16px 0;gap:16px;flex-wrap:wrap}
+.traffic-head h3{font-size:20px;font-weight:600;color:var(--ink);line-height:29px}
+.traffic-head .sub{font-size:14px;color:var(--ink-muted);margin-top:0}
+.traffic-range{
+  display:flex;align-items:center;border:1px solid var(--hairline);border-radius:6px;height:38px;background:var(--surface);
+  font-size:14px;color:var(--ink-muted);padding:0 13px;white-space:nowrap;
+}
+.day-bars{
+  display:flex;align-items:flex-end;gap:8px;height:220px;padding:24px 16px 8px;
+}
+.day-bars button{
+  flex:1;min-width:0;height:100%;background:none;display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-end;gap:8px;color:var(--ink-muted);font-size:11px;
+}
+.day-bars i{
+  display:block;width:100%;max-width:28px;border-radius:4px 4px 0 0;
+  background:var(--action);min-height:4px;
+}
+.day-bars .empty-chart{width:100%;align-self:center;text-align:center;font-size:14px;color:var(--ink-muted)}
+.traffic-foot{
+  display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-top:1px solid var(--hairline);
+  padding:9px 16px 16px;
+}
+.tf{text-align:center;padding:24px 12px 0}
+.tf .n{font-size:16px;color:var(--ink);margin-bottom:4px}
+.tf .d{font-size:16px;color:var(--ink-muted)}
+.tf .bar{height:4px;background:var(--fill);border-radius:2px;margin-top:12px;overflow:hidden}
+.tf .bar b{display:block;height:100%;border-radius:2px}
+.tf .bar.g b{background:#1b9e3e}
+.tf .bar.b b{background:#3399ff}
+.tf .bar.c b{background:#39f}
+.tf .bar.r b{background:#e55353}
+.tf .bar.p b{background:#5856d6}
+.social-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:24px}
+.social{border-radius:6px;overflow:hidden;color:#fff;min-height:96px;border:0;text-align:left;width:100%;cursor:pointer}
+.social-top{padding:16px 20px;font-size:16px}
+.social-top b{font-size:24px;font-weight:600;display:block;line-height:1.2}
+.social-bot{background:rgba(0,0,0,.08);padding:10px 20px;font-size:14px;display:flex;justify-content:space-between}
+.social.s0{background:#5856d6}
+.social.s1{background:#3399ff}
+.social.s2{background:#e55353}
+.hdr-drop-wrap{position:relative;flex-shrink:0}
+.hdr-ico[aria-expanded="true"],.hdr-tool[aria-expanded="true"],.top-avatar[aria-expanded="true"]{background:#f3f4f7}
+.drop{
+  position:absolute;top:calc(100% + 6px);right:0;width:320px;max-width:calc(100vw - 24px);
+  background:var(--surface);border:1px solid var(--hairline);border-radius:8px;
+  box-shadow:0 8px 24px rgba(0,0,21,.12);z-index:70;overflow:hidden;
+}
+.drop-sm{width:240px}
+.drop-apps{width:280px}
+.drop-head{padding:12px 16px;font-weight:600;font-size:14px;border-bottom:1px solid var(--hairline)}
+.drop-head small{display:block;font-weight:400;color:var(--ink-muted);margin-top:2px}
+.drop-body{max-height:360px;overflow:auto}
+.drop-empty{padding:24px 16px;text-align:center;color:var(--ink-muted);font-size:13px}
+.drop-foot{
+  width:100%;padding:10px 16px;background:var(--fill);font-size:13px;color:var(--action);text-align:center;
+}
+.note-row,.mail-row,.menu-row{
+  display:flex;gap:12px;width:100%;text-align:left;background:none;padding:10px 16px;
+  border-bottom:1px solid var(--hairline-soft);color:var(--ink);font-family:inherit;align-items:flex-start;
+}
+.note-row:hover,.mail-row:hover,.menu-row:hover{background:var(--fill)}
+.note-row b,.mail-row b,.menu-row b{display:block;font-size:14px;font-weight:600}
+.note-row small,.mail-row small{display:block;font-size:12px;color:var(--ink-muted);margin-top:2px}
+.note-row em{display:block;font-style:normal;font-size:13px;color:var(--ink-muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.note-dot{width:10px;height:10px;border-radius:50%;margin-top:6px;flex-shrink:0}
+.note-dot.red{background:#e55353}
+.note-dot.blue{background:#3399ff}
+.mail-av{
+  width:32px;height:32px;border-radius:50%;background:var(--fill);color:var(--ink);
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;
+}
+.lang-row{display:flex;justify-content:space-between;align-items:center;width:100%;padding:10px 16px;background:none;font-family:inherit;color:var(--ink);font-size:14px}
+.lang-row.on{color:var(--action);font-weight:600}
+.lang-row:disabled{opacity:.45;cursor:not-allowed}
+.app-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px}
+.app-grid button,.app-grid a{
+  display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;
+  background:var(--fill);border-radius:8px;color:var(--ink);font-size:13px;text-decoration:none;font-family:inherit;
+}
+.app-grid button:hover,.app-grid a:hover{background:#e9ecef}
+html.admin-night{
+  --canvas:#1a1d24; --surface:#2a303c; --ink:#e8eaed; --ink-muted:rgba(232,234,237,.68);
+  --fill:#323844; --hairline:#3c4454; --hairline-soft:#353c4a;
+}
+html.admin-night .header,html.admin-night .hdr-search,html.admin-night .traffic-range{background:var(--surface)}
+html.admin-night .hamburger:hover,html.admin-night .hdr-ico:hover,html.admin-night .hdr-tool:hover,
+html.admin-night .hdr-ico[aria-expanded="true"],html.admin-night .hdr-tool[aria-expanded="true"],
+html.admin-night .top-avatar[aria-expanded="true"]{background:#323844}
+html.admin-night th,html.admin-night tr:hover td{background:#323844}
+html.admin-night .card.loading::after{background:rgba(42,48,60,.8)}
+.pager{display:flex;gap:8px;align-items:center;padding:12px 16px;font-size:13px;color:var(--ink-muted)}
+.pager .count{margin-left:auto;font-variant-numeric:tabular-nums}
+.pager button{
+  background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radius);
+  padding:6px 12px;font-size:13px;color:var(--ink);
+}
 .pager button:disabled{opacity:.4;cursor:not-allowed}
-.badge-dis{background:var(--hairline-soft);color:var(--ink-subtle);border:1px dashed var(--hairline);border-radius:8px;padding:8px 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.badge-dis{
+  background:var(--fill);color:var(--ink-muted);border:none;
+  border-radius:var(--radius);padding:6px 12px;font-size:13px;
+}
 .keywords{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.keyword{padding:5px 10px;background:var(--surface);border:1px solid var(--hairline);border-radius:20px;font-size:13px}
-.keyword b{color:var(--accent)}
+.keyword{
+  padding:5px 12px;background:var(--surface);border:1px solid var(--hairline);
+  border-radius:var(--radius);font-size:13px;cursor:pointer;color:var(--ink);font-family:inherit;
+}
+.keyword:hover{border-color:var(--action)}
+.keyword b{color:var(--action);font-weight:600}
+.empty{padding:48px 24px;text-align:center;color:var(--ink-muted)}
+.empty p{font-size:15px;color:var(--ink)}
+.empty .sub{font-size:13px;color:var(--ink-muted);margin-top:6px}
+.muted{color:var(--ink-muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.num-cell{font-variant-numeric:tabular-nums}
+.card-pad{padding:18px}
+.card-pad h3{font-size:15px;font-weight:600;margin-bottom:10px}
 
-/* 移动端抽屉：汉堡按钮 + 遮罩 */
-.hamburger{display:none;background:none;font-size:20px;padding:6px 8px;margin-right:8px;color:var(--ink);line-height:1;cursor:pointer}
-.mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,.32);z-index:40}
+.btn-quiet{
+  background:var(--fill);color:var(--ink);padding:8px 14px;border-radius:var(--radius);
+  font-weight:500;font-size:15px;
+}
+.appear{padding:20px}
+.appear-block{display:flex;gap:16px;align-items:center;margin-bottom:20px}
+.appear-preview{
+  width:64px;height:64px;border-radius:50%;background:var(--fill);overflow:hidden;
+  display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;flex-shrink:0;
+}
+.appear-preview img{width:100%;height:100%;object-fit:cover;display:block}
+.appear-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.appear label{display:block;font-size:13px;color:var(--ink-muted);margin-bottom:8px}
+.appear .field{
+  width:100%;max-width:360px;padding:10px 12px;border:1px solid var(--hairline);border-radius:var(--radius);
+  font-size:16px;background:var(--surface);color:var(--ink);font-family:inherit;margin-bottom:20px;
+}
+.appear .field:focus{outline:none;border-color:var(--action);box-shadow:0 0 0 3px rgba(50,31,219,.15)}
+.appear-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
+.appear-row .hint{font-size:13px;color:var(--ink-muted);margin-top:4px}
+.appear-color{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.appear-color input[type=color]{
+  width:40px;height:36px;border:1px solid var(--hairline);border-radius:6px;padding:2px;background:#fff;cursor:pointer;
+}
+.appear-color .field{margin-bottom:0;max-width:120px}
+.avatar-pool{display:flex;flex-wrap:wrap;gap:12px;margin:12px 0 16px}
+.avatar-pool .slot{position:relative;width:52px;height:52px;flex-shrink:0}
+.avatar-pool .slot img{
+  width:52px;height:52px;border-radius:50%;object-fit:cover;display:block;border:1px solid var(--hairline);background:var(--fill);
+}
+#canList{min-width:0;margin-top:8px}
+#canList .can-item{
+  display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
+  padding:12px 0;border-bottom:1px solid var(--hairline);min-width:0;
+}
+#canList .can-item > div{min-width:0;overflow-wrap:anywhere;flex:1}
+#canList .can-item .hint{margin-top:4px;white-space:pre-wrap}
+.switch{
+  width:48px;height:26px;border-radius:980px;background:#c8cdd3;position:relative;flex-shrink:0;
+}
+.switch.on{background:var(--live)}
+.switch.locked,.switch:disabled{opacity:.45;cursor:not-allowed}
+.switch::after{
+  content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.18);transition:transform .18s var(--ease);
+}
+.switch.on::after{transform:translateX(22px)}
 
-/* 移动端适配：侧栏可收起(抽屉)，内容区自适应 */
+.mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:40}
+.aside-mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,.32);z-index:54}
+.aside-mask.show,.mask.show{display:block}
+
+.aside{
+  position:fixed;top:0;right:0;bottom:0;width:var(--aside-w);background:#fff;
+  border-left:1px solid var(--hairline);z-index:55;display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .2s var(--ease);box-shadow:var(--shadow);
+}
+.aside.open{transform:translateX(0)}
+.aside-head{
+  min-height:var(--topbar-h);display:flex;align-items:center;border-bottom:1px solid var(--hairline);
+  padding-right:8px;
+}
+.aside-tabs{display:flex}
+.aside-tabs button{
+  width:48px;height:65px;background:none;border-bottom:2px solid transparent;
+  display:flex;align-items:center;justify-content:center;opacity:.5;
+}
+.aside-tabs button.active{opacity:1;border-bottom-color:var(--accent)}
+.aside-tabs img{width:16px;height:16px;display:block}
+.aside-close{
+  margin-left:auto;width:32px;height:32px;border-radius:var(--radius);
+  background:none;opacity:.5;padding:8px;
+}
+.aside-close:hover{opacity:1;background:#f0f1f3}
+.aside-close img{width:16px;height:16px;display:block}
+.aside-body{flex:1;overflow:auto}
+.aside-sec{
+  background:#e7eaee;border-bottom:1px solid #c8cdd3;border-left:4px solid #6b7785;
+  text-align:center;font-size:14px;font-weight:600;color:rgba(37,43,54,.68);
+  text-transform:uppercase;letter-spacing:.04em;padding:8px 16px;
+}
+.aside-item{
+  display:block;width:100%;text-align:left;background:#fff;
+  border:0;border-bottom:1px solid var(--hairline-soft);border-left:4px solid var(--warning);
+  padding:8px 16px;color:var(--ink);font-family:inherit;
+}
+.aside-item:hover{background:#f8f9fa}
+.aside-item-title{font-size:16px;color:rgba(37,43,54,.95);margin-bottom:4px}
+.aside-item-title b{font-weight:700}
+.aside-item-meta{
+  display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;
+  font-size:14px;color:rgba(37,43,54,.68);
+}
+.aside-item-meta img{width:16px;height:16px;display:block}
+.aside-item-meta span{display:inline-flex;align-items:center;gap:4px}
+.aside-item-body{font-size:13px;color:var(--ink-muted);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aside-empty{padding:32px 16px;text-align:center;color:var(--ink-muted);font-size:14px}
+.aside-set{padding:16px}
+.aside-set p{font-size:13px;color:var(--ink-muted);margin-bottom:12px}
+.aside-set .theme-pick{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.aside-set .theme-pick button{
+  width:28px;height:28px;border-radius:50%;border:2px solid #fff;
+  box-shadow:0 0 0 1px var(--hairline);
+}
+.aside-set .theme-pick button.on{box-shadow:0 0 0 2px var(--action)}
+.aside-set .stack{display:flex;flex-direction:column;gap:8px}
+
+@media (max-width:1100px){
+  .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 @media (max-width:768px){
-  .hamburger{display:inline-block}
-  .sidebar{position:fixed;left:0;top:0;bottom:0;width:200px;padding:16px 10px;transform:translateX(-100%);transition:transform .2s ease;z-index:50;box-shadow:2px 0 10px rgba(0,0,0,.10)}
+  .sidebar{
+    position:fixed;left:0;top:0;bottom:0;width:255px;z-index:50;
+    transform:translateX(-100%);transition:transform .2s var(--ease);min-height:100dvh;
+  }
   .sidebar.open{transform:translateX(0)}
-  .mask.show{display:block}
-  .sidebar .brand{font-size:14px;padding:0 8px 12px}
-  .sidebar .nav button{padding:9px 10px;font-size:14px}
-  .sidebar .logout{margin-top:20px;padding:6px 10px}
-  .main{padding:14px 12px}
-  .main header h1{font-size:18px;margin-bottom:10px}
-  .toolbar{flex-wrap:wrap}
-  .stat-grid{grid-template-columns:repeat(2,1fr);gap:10px}
-  .card{overflow-x:auto}
-  table{min-width:520px}
-  #login{margin:10vh auto;padding:20px}
+  .sidebar.collapsed{width:255px}
+  .sidebar-close{display:flex}
+  .topbar{padding:0 12px}
+  .hdr-search,.hdr-split,.desk-only{display:none}
+  .hamburger{margin-left:0}
+  .content{padding:0 16px 16px}
+  .content h1{font-size:20px;margin:12px 0}
+  .kpi-grid{grid-template-columns:1fr;gap:16px;padding-top:16px}
+  .traffic-foot,.social-row{grid-template-columns:1fr}
+  .day-bars{height:160px}
+  table{min-width:560px}
+  .cell-content{max-width:280px}
+  #login{margin:12vh 16px;padding:28px 22px}
+}
+@media (prefers-reduced-motion: reduce){
+  .sidebar,.aside,.btn{transition:none}
 }
 </style>
 </head>
 <body>
+<a class="skip" href="#crumbNow">跳到主内容</a>
+<div id="toast" role="status"></div>
 
 <div id="login">
-  <h1>客服小美 · 运营后台</h1>
-  <p>请输入管理密码登录（会话 24h 有效）</p>
-  <div class="err" id="err"></div>
-  <input id="pw" type="password" placeholder="管理密码" autocomplete="current-password">
-  <button class="btn" id="loginBtn">登 录</button>
+  <h1>运营中台</h1>
+  <p>客服平台 · 会话 24 小时有效。坐席请走 <a href="/desk">工作台</a>。</p>
+  <form id="loginForm">
+    <div class="err" id="err" role="alert"></div>
+    <input id="loginUser" placeholder="登录名（超管可空）" autocomplete="username">
+    <input id="pw" type="password" placeholder="密码" autocomplete="current-password" required>
+    <button class="btn" id="loginBtn" type="submit">登录</button>
+  </form>
 </div>
 
 <div id="app" class="hidden">
-  <div class="sidebar">
-    <div class="brand">客服小美</div>
-    <div class="nav">
-      <button data-tab="messages" class="active">会话记录</button>
-      <button data-tab="visitors">访客列表</button>
-      <button data-tab="dashboard">运营看板</button>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <div class="brand">
+        <span class="brand-mark" id="brandMark">美</span>
+        <span class="brand-name">运营中台</span>
+      </div>
+      <button class="sidebar-close" id="sidebarClose" type="button" aria-label="关闭菜单">
+        <img src="/assets/admin/close.png" alt="">
+      </button>
     </div>
-    <button class="logout" id="logoutBtn">退出登录</button>
-  </div>
-  <div class="main">
-    <header><button class="hamburger" id="hamburger" aria-label="菜单">☰</button><h1 id="pageTitle">会话记录</h1></header>
+    <nav class="nav" aria-label="后台栏目">
+      <div class="nav-group">运营</div>
+      <button type="button" data-tab="dashboard" class="active" aria-current="page">
+        <img src="/assets/admin/ico-dash.svg" alt="" width="20" height="20">运营看板
+      </button>
+      <button type="button" data-tab="messages">
+        <img src="/assets/admin/ico-mail.svg" alt="" width="20" height="20">会话记录
+      </button>
+      <button type="button" data-tab="visitors">
+        <img src="/assets/admin/ico-list.svg" alt="" width="20" height="20">访客列表
+      </button>
+      <div class="nav-group">设置</div>
+      <button type="button" data-tab="appearance">
+        <img src="/assets/admin/tab-gear.svg" alt="" width="20" height="20">外观设置
+      </button>
+      <button type="button" data-tab="brands">
+        <img src="/assets/admin/tab-gear.svg" alt="" width="20" height="20">客服通道
+      </button>
+      <button type="button" data-tab="staff">
+        <img src="/assets/admin/ico-list.svg" alt="" width="20" height="20">客服管理
+      </button>
+      <button type="button" data-tab="routing">
+        <img src="/assets/admin/ico-apps.svg" alt="" width="20" height="20">路由与排班
+      </button>
+      <button type="button" data-tab="canned">
+        <img src="/assets/admin/ico-mail.svg" alt="" width="20" height="20">快捷回复
+      </button>
+      <button type="button" data-tab="reports">
+        <img src="/assets/admin/ico-dash.svg" alt="" width="20" height="20">坐席报表
+      </button>
+      <a href="/desk" style="margin:8px 16px;color:rgba(255,255,255,.7);font-size:14px">坐席工作台 →</a>
+    </nav>
+    <button class="logout" id="logoutBtn" type="button">退出登录</button>
+  </aside>
 
-    <!-- 会话记录 -->
-    <section id="tab-messages">
-      <div class="toolbar">
-        <input id="kw" placeholder="关键词搜索">
-        <button class="btn" style="background:var(--accent);color:#fff;padding:8px 14px;border-radius:8px;font-weight:600" onclick="loadMessages(1)">搜索</button>
-        <span class="badge-dis">🔒 转人工 · 即将上线</span>
+  <div class="shell">
+    <div class="header">
+      <div class="topbar">
+        <button class="hamburger" id="hamburger" type="button" aria-label="打开菜单" aria-controls="sidebar" aria-expanded="false">
+          <img src="/assets/admin/ico-menu.svg" width="20" height="20" alt="">
+        </button>
+        <form class="hdr-search" id="topSearchForm">
+          <img src="/assets/admin/ico-search.svg" width="18" height="18" alt="">
+          <input id="topSearch" type="search" placeholder="搜索" maxlength="80" enterkeyhint="search" aria-label="搜索">
+          <span class="kbd">⌘</span><span class="kbd">/</span>
+        </form>
+        <div class="hdr-grow"></div>
+        <div class="hdr-notes">
+          <div class="hdr-drop-wrap">
+            <button type="button" class="hdr-ico" id="btnBell" aria-label="客户新消息" aria-haspopup="true" aria-expanded="false" aria-controls="dropNotify">
+              <img src="/assets/admin/ico-bell.svg" width="20" height="20" alt="">
+              <span class="hdr-badge red" id="badgeBell" hidden>0</span>
+            </button>
+            <div class="drop" id="dropNotify" hidden>
+              <div class="drop-head">客户新消息<small>H5 聊天页里客户刚发来的话</small></div>
+              <div class="drop-body" id="dropNotifyBody"><div class="drop-empty">加载中…</div></div>
+              <button type="button" class="drop-foot" data-jump="messages">查看会话记录</button>
+            </div>
+          </div>
+          <button type="button" class="hdr-ico" id="btnList" aria-label="今日动态" aria-controls="aside" aria-expanded="false">
+            <img src="/assets/admin/ico-list.svg" width="20" height="20" alt="">
+            <span class="hdr-badge yellow" id="badgeList" hidden>0</span>
+          </button>
+          <div class="hdr-drop-wrap">
+            <button type="button" class="hdr-ico" id="btnMail" aria-label="最近会话" aria-haspopup="true" aria-expanded="false" aria-controls="dropMail">
+              <img src="/assets/admin/ico-mail.svg" width="20" height="20" alt="">
+              <span class="hdr-badge blue" id="badgeMail" hidden>0</span>
+            </button>
+            <div class="drop" id="dropMail" hidden>
+              <div class="drop-head">最近会话<small>按访客最近一次开口排序</small></div>
+              <div class="drop-body" id="dropMailBody"><div class="drop-empty">加载中…</div></div>
+              <button type="button" class="drop-foot" data-jump="visitors">查看访客列表</button>
+            </div>
+          </div>
+        </div>
+        <span class="hdr-split desk-only"></span>
+        <div class="hdr-drop-wrap desk-only">
+          <button type="button" class="hdr-tool" id="btnLang" aria-label="界面语言" aria-haspopup="true" aria-expanded="false" aria-controls="dropLang">
+            <img src="/assets/admin/ico-lang.svg" width="20" height="20" alt="">
+          </button>
+          <div class="drop drop-sm" id="dropLang" hidden>
+            <div class="drop-head">界面语言<small>聊天页与后台目前都是中文</small></div>
+            <button type="button" class="lang-row on" disabled>简体中文</button>
+            <button type="button" class="lang-row" disabled>English（未开通）</button>
+          </div>
+        </div>
+        <button type="button" class="hdr-tool desk-only" id="btnSun" aria-label="切换深色后台">
+          <img src="/assets/admin/ico-sun.svg" width="20" height="20" alt="">
+        </button>
+        <span class="hdr-split desk-only"></span>
+        <div class="hdr-drop-wrap">
+          <button type="button" class="top-avatar" id="topAvatar" aria-label="账号菜单" aria-haspopup="true" aria-expanded="false" aria-controls="dropUser">
+            <img src="/assets/admin/avatar-default.png" alt="">
+          </button>
+          <div class="drop drop-sm" id="dropUser" hidden>
+            <div class="drop-head" id="dropUserName">客服小美<small id="dropUserState">聊天页显示在线</small></div>
+            <button type="button" class="menu-row" id="dropOnline"><b>切换在线状态</b></button>
+            <button type="button" class="menu-row" data-jump="appearance"><b>外观设置</b></button>
+            <button type="button" class="menu-row" id="dropLogout"><b>退出登录</b></button>
+          </div>
+        </div>
+        <div class="hdr-drop-wrap desk-only">
+          <button type="button" class="hdr-tool hdr-apps" id="btnApps" aria-label="快捷入口" aria-haspopup="true" aria-expanded="false" aria-controls="dropApps">
+            <img src="/assets/admin/ico-apps.svg" width="20" height="20" alt="">
+          </button>
+          <div class="drop drop-apps" id="dropApps" hidden>
+            <div class="drop-head">快捷入口</div>
+            <div class="app-grid">
+              <button type="button" data-jump="dashboard">运营看板</button>
+              <button type="button" data-jump="messages">会话记录</button>
+              <button type="button" data-jump="visitors">访客列表</button>
+              <button type="button" data-jump="appearance">外观设置</button>
+              <a href="/" target="_blank" rel="noopener">打开聊天页</a>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="card"><table>
-        <thead><tr><th>方向</th><th>类型</th><th>内容</th><th>访客</th><th>时间</th></tr></thead>
-        <tbody id="msgBody"></tbody>
-      </table>
-      <div class="pager"><button id="msgPrev" onclick="loadMessages(page-1)">上一页</button><span id="msgPage"></span><button id="msgNext" onclick="loadMessages(page+1)">下一页</button></div></div>
-    </section>
+      <nav class="crumb-bar" aria-label="面包屑">家 / <b id="crumbNow">运营看板</b></nav>
+    </div>
 
-    <!-- 访客列表 -->
-    <section id="tab-visitors" class="hidden">
-      <div class="card"><table>
-        <thead><tr><th>访客 ID</th><th>首次</th><th>最近</th><th>消息数</th></tr></thead>
-        <tbody id="visitorBody"></tbody>
-      </table>
-      <div class="pager"><button id="visPrev" onclick="loadVisitors(vpage-1)">上一页</button><span id="visPage"></span><button id="visNext" onclick="loadVisitors(vpage+1)">下一页</button></div></div>
-    </section>
+    <main class="content">
+      <h1 id="pageTitle" class="hidden">运营看板</h1>
 
-    <!-- 运营看板 -->
-    <section id="tab-dashboard" class="hidden">
-      <div class="stat-grid" id="statGrid"></div>
-      <div class="card" style="padding:18px">
-        <h3 style="font-size:15px;font-weight:600;margin-bottom:10px">高频关键词（客户消息）</h3>
-        <div class="keywords" id="kwList"></div>
-      </div>
-    </section>
+      <section id="tab-messages" class="hidden" hidden>
+        <div class="toolbar">
+          <input id="kw" placeholder="关键词搜索" enterkeyhint="search" maxlength="80">
+          <button class="btn" id="msgSearch" type="button">搜索</button>
+          <span class="chip hidden" id="vidChip">访客 <span id="vidChipText"></span>
+            <button type="button" class="x" id="vidChipClear" aria-label="清除访客筛选">×</button>
+          </span>
+          <span class="badge-dis">转人工已在坐席工作台</span>
+        </div>
+        <div class="card" id="msgCard">
+          <div class="empty hidden" id="msgEmpty">
+            <p>暂无消息</p>
+            <p class="sub">有客户对话后会出现在这里</p>
+          </div>
+          <div class="table-wrap">
+          <table id="msgTable">
+            <thead><tr><th>方向</th><th>类型</th><th>内容</th><th>访客</th><th>时间</th></tr></thead>
+            <tbody id="msgBody"></tbody>
+          </table>
+          </div>
+          <div class="pager hidden" id="msgPager">
+            <button type="button" id="msgPrev">上一页</button>
+            <span id="msgPage"></span>
+            <button type="button" id="msgNext">下一页</button>
+            <span class="count" id="msgCount"></span>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-visitors" class="hidden" hidden>
+        <div class="card" id="visCard">
+          <div class="empty hidden" id="visEmpty">
+            <p>暂无访客</p>
+            <p class="sub">客户打开聊天页后会出现在这里</p>
+          </div>
+          <div class="table-wrap">
+          <table id="visTable">
+            <thead><tr><th>访客 ID</th><th>首次</th><th>最近</th><th>消息数</th></tr></thead>
+            <tbody id="visitorBody"></tbody>
+          </table>
+          </div>
+          <div class="pager hidden" id="visPager">
+            <button type="button" id="visPrev">上一页</button>
+            <span id="visPage"></span>
+            <button type="button" id="visNext">下一页</button>
+            <span class="count" id="visCount"></span>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-dashboard">
+        <div class="kpi-grid" id="statGrid"></div>
+        <div class="traffic">
+          <div class="traffic-head">
+            <div>
+              <h3>近 14 天对话</h3>
+              <p class="sub" id="trafficSub">来自 H5 聊天页的真实消息</p>
+            </div>
+            <div class="traffic-range" id="trafficRange">最近 14 天</div>
+          </div>
+          <div class="day-bars" id="trafficChart"></div>
+          <div class="traffic-foot" id="trafficFoot"></div>
+        </div>
+        <div class="social-row" id="socialRow"></div>
+        <div class="card card-pad" style="margin-top:24px">
+          <h3>高频关键词（客户消息）</h3>
+          <div class="keywords" id="kwList"></div>
+        </div>
+      </section>
+
+      <section id="tab-appearance" class="hidden" hidden>
+        <div class="card appear">
+          <h3>运营中台</h3>
+          <p class="hint" style="margin:8px 0 16px">只改侧栏和顶栏的名字、头像，不影响访客聊天页。</p>
+          <div class="appear-block">
+            <div class="appear-preview" id="brandPreview">美</div>
+            <div>
+              <div class="appear-actions">
+                <button type="button" class="btn" id="logoPick">上传头像</button>
+                <button type="button" class="btn-quiet" id="logoClear">恢复默认</button>
+              </div>
+              <p class="hint" style="margin-top:8px;font-size:13px;color:var(--ink-muted)">正方形 JPG / PNG / WebP，不超过 1MB</p>
+              <input type="file" id="logoFile" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+            </div>
+          </div>
+          <label for="brandName">后台显示名称</label>
+          <input class="field" id="brandName" maxlength="32" placeholder="运营中台">
+          <div class="appear-row">
+            <div>
+              <div style="font-weight:500">在线状态</div>
+              <p class="hint" id="onlineHint">离线时聊天页显示灰色圆点；客户仍可留言</p>
+            </div>
+            <button type="button" class="switch on" id="brandOnline" role="switch" aria-checked="true" aria-label="在线"></button>
+          </div>
+          <div class="appear-row">
+            <div>
+              <div style="font-weight:500">锁定 AI 一直在线</div>
+              <p class="hint">小美是 24 小时 AI。锁上后聊天页始终绿点，人工不在也不显示离线。</p>
+            </div>
+            <button type="button" class="switch on" id="brandOnlineLock" role="switch" aria-checked="true" aria-label="锁定一直在线"></button>
+          </div>
+          <label for="chatBgHex">对话区背景</label>
+          <p class="hint" style="margin-bottom:8px">消息区和底栏一起变色，顶栏不变。欢迎语、机器人头像和客户头像在「客服通道」。</p>
+          <div class="appear-color">
+            <input type="color" id="chatBg" value="#f2f2f7" aria-label="对话区颜色">
+            <input class="field" id="chatBgHex" maxlength="7" value="#f2f2f7" spellcheck="false">
+          </div>
+          <div class="theme-pick" id="chatBgPick" style="margin-bottom:20px">
+            <button type="button" data-bg="#f2f2f7" style="background:#f2f2f7" title="默认灰"></button>
+            <button type="button" data-bg="#ffffff" style="background:#ffffff" title="白"></button>
+            <button type="button" data-bg="#e8f0fe" style="background:#e8f0fe" title="淡蓝"></button>
+            <button type="button" data-bg="#eef6ee" style="background:#eef6ee" title="淡绿"></button>
+            <button type="button" data-bg="#1c1c1e" style="background:#1c1c1e" title="深色"></button>
+          </div>
+          <button type="button" class="btn" id="brandSave">保存</button>
+        </div>
+      </section>
+
+      <section id="tab-staff" class="hidden" hidden>
+        <div class="card card-pad">
+          <h3>坐席账号</h3>
+          <p class="hint" style="margin:8px 0 16px">超管用环境密码登录；坐席用这里的账号进工作台接待。</p>
+          <div class="toolbar" style="flex-wrap:wrap;gap:8px">
+            <input id="staffLogin" placeholder="登录名" maxlength="32" style="width:120px">
+            <input id="staffName" placeholder="显示名" maxlength="32" style="width:120px">
+            <input id="staffPass" placeholder="密码至少4位" maxlength="64" style="width:120px">
+            <select id="staffRole"><option value="agent">坐席</option><option value="admin">管理员</option></select>
+            <input id="staffMax" type="number" value="8" min="1" max="50" title="接待上限" style="width:72px">
+            <button class="btn" type="button" id="staffAdd">添加</button>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>登录名</th><th>姓名</th><th>角色</th><th>技能组</th><th>上限</th><th>状态</th><th></th></tr></thead><tbody id="staffBody"></tbody></table></div>
+        </div>
+      </section>
+
+      <section id="tab-brands" class="hidden" hidden>
+        <div class="card appear">
+          <h3>客服通道</h3>
+          <p class="hint" style="margin:8px 0 16px">改访客看到的名字、头像、欢迎语和客户头像。问题和答案在「快捷回复」。</p>
+          <div class="appear-block">
+            <div class="appear-preview" id="visitorPreview">美</div>
+            <div>
+              <div class="appear-actions">
+                <button type="button" class="btn" id="visitorLogoPick">上传机器人头像</button>
+                <button type="button" class="btn-quiet" id="visitorLogoClear">恢复默认</button>
+              </div>
+              <p class="hint" style="margin-top:8px;font-size:13px;color:var(--ink-muted)">聊天页左上角圆形头像，正方形 JPG / PNG / WebP，不超过 1MB</p>
+              <input type="file" id="visitorLogoFile" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+            </div>
+          </div>
+          <label for="visitorName">机器人名称</label>
+          <input class="field" id="visitorName" maxlength="32" placeholder="客服小美">
+          <label>欢迎语（可用 {name}）</label>
+          <input class="field" id="brandWelcome" maxlength="200" placeholder="你好，我是{name}，有问题直接发给我就好。">
+          <label>转人工关键词（逗号分隔）</label>
+          <input class="field" id="brandHandoff" maxlength="120">
+          <label>客户头像图库</label>
+          <p class="hint">上传 10 张以上，每个访客随机抽一张并记住。同一人刷新不变。最多 24 张。</p>
+          <div class="appear-actions" style="margin:10px 0">
+            <button type="button" class="btn" id="visitorAvPick">上传客户头像</button>
+            <span class="hint" id="visitorAvCount"></span>
+          </div>
+          <input type="file" id="visitorAvFile" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
+          <div class="avatar-pool" id="visitorAvPool"></div>
+          <div class="appear-row"><div>允许发图</div><button type="button" class="switch on" id="capImg" role="switch"></button></div>
+          <div class="appear-row"><div>允许文件</div><button type="button" class="switch on" id="capFile" role="switch"></button></div>
+          <div class="appear-row"><div>允许语音</div><button type="button" class="switch on" id="capVoice" role="switch"></button></div>
+          <button type="button" class="btn" id="brandCfgSave">保存</button>
+        </div>
+      </section>
+
+      <section id="tab-routing" class="hidden" hidden>
+        <div class="card appear">
+          <h3>分配与上下班</h3>
+          <label>分配方式</label>
+          <select class="field" id="routeMode">
+            <option value="least_busy">饱和度（人少优先）</option>
+            <option value="round_robin">轮询</option>
+          </select>
+          <div class="appear-row"><div>熟客跟进（优先上次坐席）</div><button type="button" class="switch on" id="routeSticky" role="switch"></button></div>
+          <div class="appear-row"><div>启用上下班</div><button type="button" class="switch" id="hoursOn" role="switch"></button></div>
+          <div class="toolbar">
+            <input class="field" id="hoursStart" value="09:00" style="width:100px">
+            <span>至</span>
+            <input class="field" id="hoursEnd" value="18:00" style="width:100px">
+          </div>
+          <p class="hint">下班后转人工进入排队，不自动分配。</p>
+          <h3 style="margin-top:20px">技能组</h3>
+          <div class="toolbar">
+            <input id="groupName" placeholder="组名" maxlength="32">
+            <button class="btn" type="button" id="groupAdd">添加组</button>
+          </div>
+          <div id="groupList"></div>
+          <button type="button" class="btn" id="routeSave" style="margin-top:16px">保存路由</button>
+        </div>
+      </section>
+
+      <section id="tab-canned" class="hidden" hidden>
+        <div class="card appear">
+          <h3>问题和答案</h3>
+          <p class="hint" style="margin:8px 0 16px">问题会出现在聊天页欢迎语下面。客户点了，就自动回这条答案，不再问 AI。坐席工作台也能点着用。</p>
+          <label for="canTitle">问题</label>
+          <input class="field" id="canTitle" maxlength="40" placeholder="怎么收费？">
+          <label for="canBody">答案</label>
+          <textarea class="field" id="canBody" maxlength="400" rows="4" placeholder="客户点这个问题时，直接回复这句话"></textarea>
+          <button type="button" class="btn" id="canAdd">添加</button>
+          <div id="canList"></div>
+        </div>
+      </section>
+
+      <section id="tab-reports" class="hidden" hidden>
+        <div class="card card-pad">
+          <h3>满意度</h3>
+          <p id="csatBox">加载中…</p>
+          <h3 style="margin-top:20px">按坐席</h3>
+          <div class="table-wrap"><table><thead><tr><th>坐席</th><th>状态</th><th>历史接待</th><th>当前会话</th><th>回复数</th></tr></thead><tbody id="reportBody"></tbody></table></div>
+        </div>
+      </section>
+    </main>
   </div>
 </div>
 
+<aside class="aside" id="aside" aria-label="动态面板" hidden>
+  <div class="aside-head">
+    <div class="aside-tabs" role="tablist">
+      <button type="button" class="active" data-aside="activity" role="tab" aria-selected="true" title="今日动态">
+        <img src="/assets/admin/tab-list.svg" alt="">
+      </button>
+      <button type="button" data-aside="chats" role="tab" aria-selected="false" title="最近访客">
+        <img src="/assets/admin/tab-chat.svg" alt="">
+      </button>
+      <button type="button" data-aside="settings" role="tab" aria-selected="false" title="快捷设置">
+        <img src="/assets/admin/tab-gear.svg" alt="">
+      </button>
+    </div>
+    <button class="aside-close" id="asideClose" type="button" aria-label="关闭面板">
+      <img src="/assets/admin/close.png" alt="">
+    </button>
+  </div>
+  <div class="aside-body">
+    <div id="aside-activity"></div>
+    <div id="aside-chats" class="hidden" hidden></div>
+    <div id="aside-settings" class="hidden aside-set" hidden>
+      <p>主题色只作用于本机后台，不影响聊天页。</p>
+      <div class="theme-pick" id="themePick">
+        <button type="button" data-theme="indigo" style="background:#5856d6" title="靛蓝"></button>
+        <button type="button" data-theme="blue" style="background:#3399ff" title="蓝"></button>
+        <button type="button" data-theme="cyan" style="background:#39f" title="青"></button>
+        <button type="button" data-theme="green" style="background:#1b9e3e" title="绿"></button>
+        <button type="button" data-theme="yellow" style="background:#f9b115" title="黄"></button>
+        <button type="button" data-theme="red" style="background:#e55353" title="红"></button>
+        <button type="button" data-theme="dark" style="background:#212631" title="深色"></button>
+      </div>
+      <div class="stack">
+        <button type="button" class="btn" data-jump="appearance">外观设置</button>
+        <button type="button" class="btn-quiet" data-jump="dashboard">运营看板</button>
+      </div>
+    </div>
+  </div>
+</aside>
+
 <div class="mask" id="mask"></div>
+<div class="aside-mask" id="asideMask"></div>
 
 <script>
-const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let page = 1, vpage = 1, V = 50;
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const $ = s => document.querySelector(s);
+const LIMIT = 50;
+let page = 1, vpage = 1, currentTab = 'dashboard', filterVisitor = '';
+let toastTimer = 0;
+const TITLES = {
+  messages: '会话记录', visitors: '访客列表', dashboard: '运营看板', appearance: '外观设置',
+  staff: '客服管理', brands: '客服通道', routing: '路由与排班', canned: '快捷回复', reports: '坐席报表'
+};
+const THEMES = {
+  indigo: ['#321fdb', '#2b1bc0'],
+  blue: ['#3399ff', '#1f7fd8'],
+  cyan: ['#3399ff', '#0088e0'],
+  green: ['#1b9e3e', '#178c37'],
+  yellow: ['#f9b115', '#d99a0c'],
+  red: ['#e55353', '#d93737'],
+  dark: ['#3c4b64', '#2f3b52'],
+};
+const ACCENTS = ['#f9b115', '#3399ff', '#e55353', '#1b9e3e', '#5856d6'];
+
+function applyTheme(name) {
+  const t = THEMES[name] || THEMES.indigo;
+  document.documentElement.style.setProperty('--action', t[0]);
+  document.documentElement.style.setProperty('--action-press', t[1]);
+  try { localStorage.setItem('xiaomei_admin_theme', name); } catch (e) {}
+  document.querySelectorAll('#themePick button').forEach(b => b.classList.toggle('on', b.dataset.theme === name));
+}
+try { applyTheme(localStorage.getItem('xiaomei_admin_theme') || 'indigo'); } catch (e) { applyTheme('indigo'); }
+
+function toast(msg) {
+  const el = $('#toast');
+  el.textContent = msg;
+  el.className = 'show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = ''; }, 2800);
+}
+
+function fmtTime(s) {
+  if (!s) return '—';
+  const d = new Date(String(s).replace(' ', 'T'));
+  if (isNaN(d.getTime())) return String(s);
+  const now = new Date();
+  const p = n => String(n).padStart(2, '0');
+  const hm = p(d.getHours()) + ':' + p(d.getMinutes());
+  if (d.toDateString() === now.toDateString()) return '今天 ' + hm;
+  const y = new Date(now); y.setDate(now.getDate() - 1);
+  if (d.toDateString() === y.toDateString()) return '昨天 ' + hm;
+  const md = p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + hm;
+  return d.getFullYear() === now.getFullYear() ? md : d.getFullYear() + '-' + md;
+}
+
+function isToday(s) {
+  const d = new Date(String(s || '').replace(' ', 'T'));
+  return !isNaN(d.getTime()) && d.toDateString() === new Date().toDateString();
+}
+
+function shortId(id) {
+  const s = String(id || '');
+  if (s.length <= 12) return s;
+  return s.slice(0, 8) + '…';
+}
+
+function vidBtn(id) {
+  const s = String(id || '');
+  return `<button type="button" class="vid" data-vid="${esc(s)}" title="${esc(s)}">${esc(shortId(s))}</button>`;
+}
+
+const TYPE_LABEL = { text: '文本', image: '图片', file: '文件', voice: '语音', record: '语音' };
+function typeLabel(t) { return TYPE_LABEL[t] || t || '—'; }
+function isMobile() { return window.matchMedia('(max-width: 768px)').matches; }
+
+function apiErr(data, status) {
+  const d = data && data.detail;
+  if (typeof d === 'string') return d;
+  if (Array.isArray(d) && d[0] && (d[0].msg || d[0].message)) return d[0].msg || d[0].message;
+  if (status === 404) return '后台进程还是旧版，请重启服务后再试';
+  return (data && data.error) || ('请求失败 ' + status);
+}
+
 const api = async (path) => {
   const r = await fetch('/admin/api/' + path, { credentials: 'include' });
   if (r.status === 401) { showLogin(); throw new Error('unauth'); }
-  return r.json();
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(apiErr(data, r.status));
+  return data;
 };
 
-function showLogin(){ $('#login').classList.remove('hidden'); $('#app').classList.add('hidden'); }
-async function tryLogin(){
-  const p = $('#pw').value;
-  const r = await fetch('/admin/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({password:p}) });
-  if (r.ok){ $('#err').textContent=''; $('#app').classList.remove('hidden'); $('#login').classList.add('hidden'); loadForTab(currentTab); }
-  else { $('#err').textContent = r.status===429 ? '尝试过于频繁，请稍后再试' : '密码错误'; }
+function showLogin() {
+  $('#login').classList.remove('hidden');
+  $('#app').classList.add('hidden');
+  $('#loginBtn').disabled = false;
+  $('#loginBtn').textContent = '登录';
 }
-$('#loginBtn').onclick = tryLogin;
-$('#pw').addEventListener('keydown', e => { if(e.key==='Enter') tryLogin(); });
-$('#logoutBtn').onclick = async () => { await fetch('/admin/logout',{method:'POST'}); showLogin(); };
 
-let currentTab = 'messages';
-function switchTab(t){
+function closeDrawer() {
+  $('#sidebar').classList.remove('open');
+  $('#mask').classList.remove('show');
+  $('#hamburger').setAttribute('aria-expanded', 'false');
+}
+
+function closeAside() {
+  $('#aside').classList.remove('open');
+  $('#aside').hidden = true;
+  $('#asideMask').classList.remove('show');
+  $('#btnList').setAttribute('aria-expanded', 'false');
+}
+
+function closeDrops(except) {
+  document.querySelectorAll('.drop').forEach(d => {
+    if (d.id !== except) d.hidden = true;
+  });
+  document.querySelectorAll('[aria-haspopup="true"]').forEach(b => {
+    if (except && b.getAttribute('aria-controls') === except) return;
+    b.setAttribute('aria-expanded', 'false');
+  });
+}
+
+function toggleDrop(id, btn) {
+  const el = $('#' + id);
+  const willOpen = el.hidden;
+  closeDrops(willOpen ? id : null);
+  closeAside();
+  el.hidden = !willOpen;
+  btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+}
+
+function applyNight(on) {
+  document.documentElement.classList.toggle('admin-night', on);
+  try { localStorage.setItem('xiaomei_admin_night', on ? '1' : '0'); } catch (e) {}
+  $('#btnSun').setAttribute('aria-label', on ? '切换浅色后台' : '切换深色后台');
+}
+try { applyNight(localStorage.getItem('xiaomei_admin_night') === '1'); } catch (e) { applyNight(false); }
+
+function notifyRow(m) {
+  const inbound = m.direction === 'customer';
+  const body = String(m.content || '').replace(/\s+/g, ' ').slice(0, 48);
+  return `<button type="button" class="note-row" data-vid="${esc(m.visitor_id)}">` +
+    `<i class="note-dot ${inbound ? 'red' : 'blue'}"></i><span>` +
+    `<b>${inbound ? '客户发来消息' : '小美已回复'}</b>` +
+    `<small>访客 ${esc(shortId(m.visitor_id))} · ${esc(fmtTime(m.created_at))}</small>` +
+    (body ? `<em>${esc(body)}</em>` : '') +
+    `</span></button>`;
+}
+
+function mailRow(v) {
+  const n = v.msg_count ?? v.total_msgs ?? 0;
+  const ch = String(v.visitor_id || '?').slice(0, 1).toUpperCase();
+  return `<button type="button" class="mail-row" data-vid="${esc(v.visitor_id)}">` +
+    `<span class="mail-av">${esc(ch)}</span><span>` +
+    `<b>访客 ${esc(shortId(v.visitor_id))}</b>` +
+    `<small>${esc(fmtTime(v.last_seen))} · ${n} 条消息</small>` +
+    `</span></button>`;
+}
+
+async function loadHeaderFeeds() {
+  try {
+    const [msg, vis] = await Promise.all([
+      api('messages?page=1&limit=8'),
+      api('visitors?page=1&limit=8'),
+    ]);
+    const customers = (msg.data || []).filter(m => m.direction === 'customer');
+    const notes = customers.length ? customers : (msg.data || []);
+    $('#dropNotifyBody').innerHTML = notes.length
+      ? notes.map(notifyRow).join('')
+      : '<div class="drop-empty">今天还没有客户消息</div>';
+    const visitors = vis.data || [];
+    $('#dropMailBody').innerHTML = visitors.length
+      ? visitors.map(mailRow).join('')
+      : '<div class="drop-empty">还没有访客打开过聊天页</div>';
+  } catch (e) {
+    if (e.message === 'unauth') return;
+    $('#dropNotifyBody').innerHTML = '<div class="drop-empty">加载失败</div>';
+  }
+}
+
+function openAside(tab) {
+  $('#aside').hidden = false;
+  $('#aside').classList.add('open');
+  $('#asideMask').classList.add('show');
+  $('#btnList').setAttribute('aria-expanded', 'true');
+  if (tab) switchAside(tab);
+  loadAside();
+}
+
+function switchAside(name) {
+  document.querySelectorAll('.aside-tabs button').forEach(b => {
+    const on = b.dataset.aside === name;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  ['activity', 'chats', 'settings'].forEach(id => {
+    const el = $('#aside-' + id);
+    el.classList.toggle('hidden', id !== name);
+    el.toggleAttribute('hidden', id !== name);
+  });
+}
+
+function setChip() {
+  const chip = $('#vidChip');
+  if (!filterVisitor) { chip.classList.add('hidden'); return; }
+  $('#vidChipText').textContent = shortId(filterVisitor);
+  chip.title = filterVisitor;
+  chip.classList.remove('hidden');
+}
+
+function goMessages() {
+  page = 1;
+  if (currentTab !== 'messages') switchTab('messages');
+  else loadMessages(1);
+}
+
+function filterByVisitor(id) {
+  filterVisitor = id || '';
+  setChip();
+  goMessages();
+}
+
+function searchByKeyword(kw) {
+  $('#kw').value = kw || '';
+  filterVisitor = '';
+  setChip();
+  goMessages();
+}
+
+async function afterLogin() {
+  $('#err').textContent = '';
+  try {
+    const me = await api('me');
+    if (me.role === 'agent') { location.href = '/desk'; return; }
+    if ($('#dropUserName')) $('#dropUserName').innerHTML = esc(me.name || '超管') + '<small>运营中台</small>';
+  } catch (e) {}
+  $('#app').classList.remove('hidden');
+  $('#login').classList.add('hidden');
+  loadAppearance();
+  loadForTab(currentTab);
+  startPoll();
+}
+
+let pollTimer = 0;
+function startPoll() {
+  if (pollTimer) return;
+  pollTimer = setInterval(async () => {
+    if (!$('#login').classList.contains('hidden')) return;
+    try {
+      const s = await api('stats');
+      setBadge('#badgeBell', s.unread_customer ?? 0);
+      if (currentTab === 'dashboard') loadDashboard();
+    } catch (e) {}
+  }, 20000);
+}
+
+$('#loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = $('#loginBtn');
+  if (btn.disabled) return;
+  btn.disabled = true;
+  btn.textContent = '登录中…';
+  $('#err').textContent = '';
+  try {
+    const r = await fetch('/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ username: ($('#loginUser') && $('#loginUser').value.trim()) || '', password: $('#pw').value }),
+    });
+    if (r.ok) afterLogin();
+    else $('#err').textContent = r.status === 429 ? '尝试过于频繁，请稍后再试' : (r.status === 503 ? '后台未配置密码，无法登录' : '密码错误');
+  } catch (err) {
+    $('#err').textContent = '网络不可用，请稍后重试';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '登录';
+  }
+});
+
+async function doLogout() {
+  try { await fetch('/admin/logout', { method: 'POST', credentials: 'include' }); }
+  catch (e) {}
+  closeAside();
+  closeDrops();
+  showLogin();
+}
+$('#logoutBtn').onclick = doLogout;
+$('#dropLogout').onclick = doLogout;
+
+function switchTab(t) {
   currentTab = t;
-  document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('active', b.dataset.tab===t));
-  document.querySelectorAll('section[id^=tab-]').forEach(s => s.classList.add('hidden'));
-  $('#tab-'+t).classList.remove('hidden');
-  const titles = {messages:'会话记录', visitors:'访客列表', dashboard:'运营看板'};
-  $('#pageTitle').textContent = titles[t];
+  document.querySelectorAll('.nav button').forEach(b => {
+    const on = b.dataset.tab === t;
+    b.classList.toggle('active', on);
+    if (on) b.setAttribute('aria-current', 'page');
+    else b.removeAttribute('aria-current');
+  });
+  document.querySelectorAll('section[id^=tab-]').forEach(s => {
+    const on = s.id === 'tab-' + t;
+    s.classList.toggle('hidden', !on);
+    s.toggleAttribute('hidden', !on);
+  });
+  $('#pageTitle').textContent = TITLES[t];
+  $('#crumbNow').textContent = TITLES[t];
+  $('#pageTitle').classList.toggle('hidden', t === 'dashboard');
+  if (isMobile()) { closeDrawer(); closeAside(); closeDrops(); }
   loadForTab(t);
 }
 document.querySelectorAll('.nav button').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
 
-async function loadForTab(t){
-  if (t==='messages') loadMessages(page);
-  else if (t==='visitors') loadVisitors(vpage);
-  else if (t==='dashboard') loadDashboard();
+async function loadForTab(t) {
+  try {
+    if (t === 'messages') await loadMessages(page);
+    else if (t === 'visitors') await loadVisitors(vpage);
+    else if (t === 'dashboard') await loadDashboard();
+    else if (t === 'appearance') await loadAppearance();
+    else if (t === 'staff') await loadStaff();
+    else if (t === 'brands') await loadBrands();
+    else if (t === 'routing') await loadRouting();
+    else if (t === 'canned') await loadCanned();
+    else if (t === 'reports') await loadReports();
+  } catch (e) {
+    if (e.message !== 'unauth') toast(e.message || '加载失败');
+  }
 }
 
-async function loadMessages(p){
-  page = p || 1;
+function setBusy(card, on) {
+  card.classList.toggle('loading', on);
+  card.setAttribute('aria-busy', on ? 'true' : 'false');
+}
+
+function renderPager(pager, pageEl, countEl, prev, next, p, limit, total, load) {
+  const empty = !total;
+  pager.classList.toggle('hidden', empty);
+  if (empty) return;
+  const from = (p - 1) * limit + 1;
+  const to = Math.min(p * limit, total);
+  pageEl.textContent = `第 ${p} 页`;
+  countEl.textContent = `${from}–${to} / ${total}`;
+  prev.disabled = p <= 1;
+  next.disabled = to >= total;
+  prev.onclick = () => load(p - 1);
+  next.onclick = () => load(p + 1);
+}
+
+async function loadMessages(p) {
+  page = Math.max(p || 1, 1);
   const kw = $('#kw').value.trim();
-  const data = await api(`messages?keyword=${encodeURIComponent(kw)}&page=${page}&limit=${V}`);
-  $('#msgBody').innerHTML = data.data.map(m =>
-    `<tr><td><span class="tag ${m.direction==='customer'?'cust':'ai'}">${m.direction==='customer'?'客户':'小美'}</span></td>` +
-    `<td>${esc(m.msg_type)}</td><td>${esc(m.content)}</td><td>${esc(m.visitor_id)}</td><td style="white-space:nowrap;color:var(--ink-subtle)">${esc(m.created_at)}</td></tr>`
-  ).join('') || `<tr><td colspan="5" style="text-align:center;color:var(--ink-subtle)">暂无消息</td></tr>`;
-  $('#msgPage').textContent = `第 ${page} 页`;
-  $('#msgPrev').disabled = page===1; $('#msgNext').disabled = data.data.length < V;
+  const card = $('#msgCard');
+  setBusy(card, true);
+  try {
+    const q = new URLSearchParams({
+      keyword: kw, page: String(page), limit: String(LIMIT),
+    });
+    if (filterVisitor) q.set('visitor_id', filterVisitor);
+    const data = await api('messages?' + q.toString());
+    const rows = data.data || [];
+    const total = data.total != null ? Number(data.total) : rows.length;
+    const empty = rows.length === 0;
+    $('#msgEmpty').classList.toggle('hidden', !empty);
+    $('#msgTable').classList.toggle('hidden', empty);
+    if (empty) {
+      const filtered = !!(kw || filterVisitor);
+      $('#msgEmpty').innerHTML = filtered
+        ? `<p>没有匹配的消息</p><p class="sub">${filterVisitor ? '试试换关键词，或清除访客筛选' : '试试换一个关键词'}</p>`
+        : '<p>暂无消息</p><p class="sub">有客户对话后会出现在这里</p>';
+    } else {
+      $('#msgBody').innerHTML = rows.map(m =>
+        `<tr>` +
+        `<td class="keep"><span class="tag ${m.direction === 'customer' ? 'cust' : 'ai'}">${m.direction === 'customer' ? '客户' : '小美'}</span></td>` +
+        `<td class="keep">${esc(typeLabel(m.msg_type))}</td>` +
+        `<td><div class="cell-content" title="${esc(m.content)}">${esc(m.content)}</div></td>` +
+        `<td class="keep">${vidBtn(m.visitor_id)}</td>` +
+        `<td class="muted keep">${esc(fmtTime(m.created_at))}</td></tr>`
+      ).join('');
+    }
+    renderPager($('#msgPager'), $('#msgPage'), $('#msgCount'), $('#msgPrev'), $('#msgNext'), page, LIMIT, total, loadMessages);
+  } catch (e) {
+    if (e.message === 'unauth') return;
+    toast('会话记录加载失败');
+  } finally {
+    setBusy(card, false);
+  }
 }
 
-async function loadVisitors(p){
-  vpage = p || 1;
-  const data = await api(`visitors?page=${vpage}&limit=${V}`);
-  $('#visitorBody').innerHTML = data.data.map(v =>
-    `<tr><td style="font-family:monospace">${esc(v.visitor_id)}</td><td>${esc(v.first_seen)}</td><td>${esc(v.last_seen)}</td><td>${v.msg_count}</td></tr>`
-  ).join('') || `<tr><td colspan="4" style="text-align:center;color:var(--ink-subtle)">暂无访客</td></tr>`;
-  $('#visPage').textContent = `第 ${vpage} 页`;
-  $('#visPrev').disabled = vpage===1; $('#visNext').disabled = data.data.length < V;
+async function loadVisitors(p) {
+  vpage = Math.max(p || 1, 1);
+  const card = $('#visCard');
+  setBusy(card, true);
+  try {
+    const data = await api(`visitors?page=${vpage}&limit=${LIMIT}`);
+    const rows = data.data || [];
+    const total = data.total != null ? Number(data.total) : rows.length;
+    const empty = rows.length === 0;
+    $('#visEmpty').classList.toggle('hidden', !empty);
+    $('#visTable').classList.toggle('hidden', empty);
+    if (!empty) {
+      $('#visitorBody').innerHTML = rows.map(v =>
+        `<tr class="clickable" data-vid="${esc(v.visitor_id)}">` +
+        `<td>${vidBtn(v.visitor_id)}</td>` +
+        `<td class="muted">${esc(fmtTime(v.first_seen))}</td>` +
+        `<td class="muted">${esc(fmtTime(v.last_seen))}</td>` +
+        `<td class="num-cell">${v.msg_count ?? v.total_msgs ?? 0}</td></tr>`
+      ).join('');
+    }
+    renderPager($('#visPager'), $('#visPage'), $('#visCount'), $('#visPrev'), $('#visNext'), vpage, LIMIT, total, loadVisitors);
+  } catch (e) {
+    if (e.message === 'unauth') return;
+    toast('访客列表加载失败');
+  } finally {
+    setBusy(card, false);
+  }
 }
 
-async function loadDashboard(){
-  const s = await api('stats');
-  const cards = [
-    ['visitors','累计访客'], ['sessions','累计会话'], ['messages','累计消息'],
-    ['today_msgs','今日消息'], ['today_visitors','今日访客'], ['attachments','上传附件']
-  ];
-  $('#statGrid').innerHTML = cards.map(c => `<div class="stat"><div class="num">${s[c[0]]}</div><div class="lbl">${c[1]}</div></div>`).join('');
-  $('#kwList').innerHTML = (s.top_keywords||[]).map(([k,n]) => `<span class="keyword">${esc(k)} <b>${n}</b></span>`).join('') || '<span style="color:var(--ink-subtle)">暂无关键词</span>';
+function fmtK(n) {
+  n = Number(n) || 0;
+  if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/, '') + 'K';
+  return String(n);
 }
 
-// 移动端抽屉：汉堡开关 + 遮罩关闭
-const ham = document.getElementById('hamburger'), mask = document.getElementById('mask');
-if (ham) ham.addEventListener('click', () => { document.querySelector('.sidebar').classList.toggle('open'); mask.classList.toggle('show'); });
-if (mask) mask.addEventListener('click', () => { document.querySelector('.sidebar').classList.remove('open'); mask.classList.remove('show'); });
+function setBadge(id, n) {
+  const el = $(id);
+  const v = Number(n) || 0;
+  el.hidden = v <= 0;
+  el.textContent = v > 99 ? '99' : String(v);
+}
 
-// 启动
+function sparkSvg(values) {
+  const w = 220, h = 70;
+  const nums = (values || []).map(Number);
+  if (!nums.length) return '';
+  const max = Math.max(...nums, 1);
+  const step = nums.length > 1 ? w / (nums.length - 1) : w;
+  const pts = nums.map((v, i) => (i * step) + ',' + (h - (v / max) * (h - 10) - 5)).join(' ');
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2" points="${pts}"/></svg>`;
+}
+
+function vsYesterday(today, yday) {
+  const t = Number(today) || 0, y = Number(yday) || 0;
+  const d = t - y;
+  if (d === 0) return { t: '与昨日持平', down: false };
+  return { t: '较昨日 ' + (d > 0 ? '+' : '') + d, down: d < 0 };
+}
+
+function kpiCard(cls, num, hint, down, label, spark, jump) {
+  const arrow = down ? 'ico-down.svg' : 'ico-up.svg';
+  return `<button type="button" class="kpi ${cls}" data-jump="${esc(jump)}">` +
+    `<div class="kpi-head"><div><div><span class="kpi-num">${esc(num)}</span>` +
+    `<span class="kpi-pct">${esc(hint)}</span>` +
+    `<img src="/assets/admin/${arrow}" width="16" height="16" alt="" style="vertical-align:middle;margin-left:4px"></div>` +
+    `<div class="kpi-lbl">${esc(label)}</div></div></div>` +
+    `<div class="kpi-spark">${spark}</div></button>`;
+}
+
+async function loadDashboard() {
+  try {
+    const s = await api('stats');
+    const vis = s.visitors ?? 0, sess = s.sessions ?? 0, msgs = s.messages ?? 0;
+    const today = s.today_msgs ?? 0, tv = s.today_visitors ?? 0, att = s.attachments ?? 0;
+    const cust = s.customer_msgs ?? 0, ast = s.assistant_msgs ?? 0;
+    const daily = s.daily || [];
+    const dVis = vsYesterday(tv, s.yesterday_visitors);
+    const dMsg = vsYesterday(today, s.yesterday_msgs);
+    const reply = cust ? Math.round((ast / cust) * 1000) / 10 : 0;
+    $('#statGrid').innerHTML =
+      kpiCard('kpi-users', fmtK(vis), dVis.t, dVis.down, '累计访客', sparkSvg(daily.map(d => d.visitors)), 'visitors') +
+      kpiCard('kpi-income', fmtK(msgs), dMsg.t, dMsg.down, '累计消息', sparkSvg(daily.map(d => d.msgs)), 'messages') +
+      kpiCard('kpi-conv', reply + '%', ast + ' 条回复', false, '回复率', sparkSvg(daily.map(d => d.customer)), 'messages') +
+      kpiCard('kpi-sess', fmtK(sess), '今日 ' + (s.today_sessions ?? 0) + ' 场', false, '累计会话', sparkSvg(daily.map(d => d.sessions ?? d.msgs)), 'messages');
+    $('#trafficSub').textContent = '累计 ' + msgs + ' 条消息 · ' + vis + ' 位访客 · 今日客户 ' + (s.today_customer ?? 0) + ' 条';
+    if (daily.length) {
+      $('#trafficRange').textContent = daily[0].date.slice(5) + ' 至 ' + daily[daily.length - 1].date.slice(5);
+      const maxDay = Math.max(...daily.map(d => d.msgs), 1);
+      const any = daily.some(d => d.msgs > 0);
+      $('#trafficChart').innerHTML = any
+        ? daily.map(d => {
+            const h = Math.max(4, Math.round((d.msgs / maxDay) * 100));
+            return `<button type="button" title="${esc(d.date)}：${d.msgs} 条消息，${d.visitors} 位访客"><i style="height:${h}%"></i><span>${esc(d.date.slice(5))}</span></button>`;
+          }).join('')
+        : '<div class="empty-chart">近 14 天还没有对话</div>';
+    }
+    const max = Math.max(vis, msgs, 1);
+    const bars = [
+      ['累计访客', vis + ' 位', 'g', vis / max],
+      ['今日访客', tv + ' 位', 'b', tv / max],
+      ['累计消息', msgs + ' 条', 'c', msgs / max],
+      ['今日消息', today + ' 条', 'r', today / max],
+      ['图片/文件', att + ' 个', 'p', att / max],
+    ];
+    $('#trafficFoot').innerHTML = bars.map(b =>
+      `<div class="tf"><div class="n">${esc(b[0])}</div><div class="d">${esc(b[1])}</div>` +
+      `<div class="bar ${b[2]}"><b style="width:${Math.max(4, Math.round(b[3] * 100))}%"></b></div></div>`
+    ).join('');
+    $('#socialRow').innerHTML =
+      `<button type="button" class="social s0" data-jump="messages"><div class="social-top"><b>${fmtK(cust)}</b>客户消息</div><div class="social-bot"><span>今日客户</span><span>${s.today_customer ?? 0}</span></div></button>` +
+      `<button type="button" class="social s1" data-jump="messages"><div class="social-top"><b>${fmtK(ast)}</b>小美回复</div><div class="social-bot"><span>今日消息</span><span>${today}</span></div></button>` +
+      `<button type="button" class="social s2" data-jump="messages"><div class="social-top"><b>${fmtK(att)}</b>图片 / 文件</div><div class="social-bot"><span>非文本消息</span><span>${att}</span></div></button>`;
+    setBadge('#badgeBell', s.unread_customer ?? 0);
+    setBadge('#badgeList', 0);
+    setBadge('#badgeMail', 0);
+    const kws = s.top_keywords || [];
+    $('#kwList').innerHTML = kws.length
+      ? kws.map(([k, n]) => `<button type="button" class="keyword" data-kw="${esc(k)}">${esc(k)} <b>${n}</b></button>`).join('')
+      : '<span style="color:var(--ink-muted)">暂无关键词</span>';
+  } catch (e) {
+    if (e.message === 'unauth') return;
+    toast('看板加载失败');
+  }
+}
+
+function setMark(el, cfg, fallbackImg) {
+  if (!el) return;
+  const name = (cfg.name || '客服小美').trim();
+  const ch = name.slice(-1) || '美';
+  if (cfg.logo_url) el.innerHTML = '<img src="' + esc(cfg.logo_url) + '" alt="">';
+  else if (fallbackImg) el.innerHTML = '<img src="' + fallbackImg + '" alt="">';
+  else el.textContent = ch;
+}
+
+function setChatBgPicker(color) {
+  const bg = color || '#f2f2f7';
+  $('#chatBg').value = bg;
+  $('#chatBgHex').value = bg;
+  document.querySelectorAll('#chatBgPick button').forEach(b => b.classList.toggle('on', b.dataset.bg === bg));
+}
+
+function syncOnlineLock(locked, online) {
+  const lockOn = !!locked;
+  const on = lockOn || online !== false;
+  $('#brandOnlineLock').classList.toggle('on', lockOn);
+  $('#brandOnlineLock').setAttribute('aria-checked', lockOn ? 'true' : 'false');
+  $('#brandOnline').classList.toggle('on', on);
+  $('#brandOnline').classList.toggle('locked', lockOn);
+  $('#brandOnline').disabled = lockOn;
+  $('#brandOnline').setAttribute('aria-checked', on ? 'true' : 'false');
+  $('#onlineHint').textContent = lockOn
+    ? '已锁定：聊天页 24 小时显示在线（AI 值班）'
+    : '离线时聊天页显示灰色圆点；客户仍可留言';
+}
+
+function paintOps(ops) {
+  if (!ops) return;
+  setMark($('#brandPreview'), ops);
+  setMark($('#brandMark'), ops);
+  setMark($('#topAvatar'), ops, '/assets/admin/avatar-default.png');
+  const name = ops.name || '运营中台';
+  document.querySelectorAll('.brand-name').forEach(n => { n.textContent = name; });
+  $('#brandName').value = name;
+  const state = $('#dropUserState');
+  $('#dropUserName').innerHTML = esc(name) + '<small id="dropUserState">' + (state ? state.textContent : '运营中台') + '</small>';
+}
+
+function paintAppearance(cfg, ops) {
+  if (ops) paintOps(ops);
+  if (!cfg) return;
+  const on = cfg.online !== false;
+  const lock = cfg.online_lock !== false;
+  const state = $('#dropUserState');
+  if (state) state.textContent = on ? (lock ? '聊天页 AI 24 小时在线' : '聊天页显示在线') : '聊天页显示离线';
+  syncOnlineLock(lock, on);
+  setChatBgPicker(cfg.chat_bg || '#f2f2f7');
+}
+
+async function loadAppearance() {
+  try {
+    const [ops, cfg] = await Promise.all([api('ops'), api('settings')]);
+    paintAppearance(cfg, ops);
+  } catch (e) {
+    if (e.message === 'unauth') return;
+    toast('外观设置加载失败');
+  }
+}
+
+function activityItem(m, i) {
+  const accent = ACCENTS[i % ACCENTS.length];
+  const who = m.direction === 'customer' ? '客户' : '小美';
+  const body = String(m.content || '').replace(/\s+/g, ' ').slice(0, 56);
+  return `<button type="button" class="aside-item" data-vid="${esc(m.visitor_id)}" style="border-left-color:${accent}">` +
+    `<div class="aside-item-title">与 <b>${esc(shortId(m.visitor_id))}</b> · ${esc(who)}</div>` +
+    `<div class="aside-item-meta"><span><img src="/assets/admin/icon-time.svg" alt="">${esc(fmtTime(m.created_at))}</span></div>` +
+    (body ? `<div class="aside-item-body">${esc(body)}</div>` : '') +
+    `</button>`;
+}
+
+function groupBlocks(items, htmlFor) {
+  const today = items.filter(x => isToday(x.created_at || x.last_seen));
+  const rest = items.filter(x => !isToday(x.created_at || x.last_seen));
+  let html = '';
+  if (today.length) html += '<div class="aside-sec">今天</div>' + today.map(htmlFor).join('');
+  if (rest.length) html += '<div class="aside-sec">更早</div>' + rest.map(htmlFor).join('');
+  return html || '<div class="aside-empty">暂无动态</div>';
+}
+
+async function loadAside() {
+  try {
+    const [msg, vis] = await Promise.all([
+      api('messages?page=1&limit=12'),
+      api('visitors?page=1&limit=12'),
+    ]);
+    const rows = msg.data || [];
+    $('#aside-activity').innerHTML = groupBlocks(rows, activityItem);
+    const visitors = vis.data || [];
+    $('#aside-chats').innerHTML = visitors.length
+      ? groupBlocks(visitors.map(v => ({ ...v, created_at: v.last_seen })), (v, i) => {
+          const accent = ACCENTS[i % ACCENTS.length];
+          return `<button type="button" class="aside-item" data-vid="${esc(v.visitor_id)}" style="border-left-color:${accent}">` +
+            `<div class="aside-item-title">访客 <b>${esc(shortId(v.visitor_id))}</b></div>` +
+            `<div class="aside-item-meta"><span><img src="/assets/admin/icon-time.svg" alt="">${esc(fmtTime(v.last_seen))}</span>` +
+            `<span><img src="/assets/admin/icon-pin.svg" alt="">${v.msg_count ?? v.total_msgs ?? 0} 条</span></div></button>`;
+        })
+      : '<div class="aside-empty">暂无访客</div>';
+  } catch (e) {
+    if (e.message === 'unauth') return;
+    $('#aside-activity').innerHTML = '<div class="aside-empty">动态加载失败</div>';
+  }
+}
+
+async function apiSend(path, opts) {
+  const r = await fetch('/admin/api/' + path, { credentials: 'include', ...opts });
+  if (r.status === 401) { showLogin(); throw new Error('unauth'); }
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(apiErr(data, r.status));
+  return data;
+}
+
+$('#logoPick').onclick = () => $('#logoFile').click();
+$('#logoFile').onchange = async () => {
+  const f = $('#logoFile').files[0];
+  $('#logoFile').value = '';
+  if (!f) return;
+  const fd = new FormData();
+  fd.append('file', f);
+  try {
+    paintOps(await apiSend('ops-logo', { method: 'POST', body: fd }));
+    toast('后台头像已更新');
+  } catch (e) {
+    if (e.message !== 'unauth') toast(e.message || '上传失败');
+  }
+};
+$('#logoClear').onclick = async () => {
+  try {
+    paintOps(await apiSend('ops-logo', { method: 'DELETE' }));
+    toast('已恢复默认头像');
+  } catch (e) {
+    if (e.message !== 'unauth') toast(e.message || '操作失败');
+  }
+};
+$('#brandOnline').onclick = () => {
+  if ($('#brandOnlineLock').classList.contains('on')) {
+    toast('已锁定为 AI 一直在线，先关掉锁定再改');
+    return;
+  }
+  const on = !$('#brandOnline').classList.contains('on');
+  $('#brandOnline').classList.toggle('on', on);
+  $('#brandOnline').setAttribute('aria-checked', on ? 'true' : 'false');
+};
+$('#brandOnlineLock').onclick = () => {
+  const lock = !$('#brandOnlineLock').classList.contains('on');
+  syncOnlineLock(lock, true);
+};
+$('#chatBg').oninput = () => setChatBgPicker($('#chatBg').value);
+$('#chatBgHex').addEventListener('change', () => {
+  let v = $('#chatBgHex').value.trim();
+  if (/^#[0-9a-fA-F]{3}$/.test(v)) v = '#' + [...v.slice(1)].map(c => c + c).join('');
+  if (/^#[0-9a-fA-F]{6}$/.test(v)) setChatBgPicker(v.toLowerCase());
+  else setChatBgPicker($('#chatBg').value);
+});
+$('#chatBgPick').addEventListener('click', e => {
+  const btn = e.target.closest('[data-bg]');
+  if (btn) setChatBgPicker(btn.dataset.bg);
+});
+$('#brandSave').onclick = async () => {
+  try {
+    const ops = await apiSend('ops', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: $('#brandName').value.trim() }),
+    });
+    const cfg = await apiSend('settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        online: $('#brandOnline').classList.contains('on'),
+        online_lock: $('#brandOnlineLock').classList.contains('on'),
+        chat_bg: $('#chatBgHex').value.trim() || $('#chatBg').value,
+      }),
+    });
+    paintAppearance(cfg, ops);
+    toast('已保存');
+  } catch (e) {
+    if (e.message !== 'unauth') toast(e.message || '保存失败');
+  }
+};
+
+document.addEventListener('click', e => {
+  const jump = e.target.closest('[data-jump]');
+  if (jump) { switchTab(jump.dataset.jump); closeAside(); closeDrops(); return; }
+  const vid = e.target.closest('[data-vid]');
+  if (vid && vid.dataset.vid) {
+    e.preventDefault();
+    filterByVisitor(vid.dataset.vid);
+    closeDrops();
+    if (vid.closest('.aside')) closeAside();
+  }
+  const kw = e.target.closest('.keyword[data-kw]');
+  if (kw) searchByKeyword(kw.dataset.kw);
+  if (!e.target.closest('.hdr-drop-wrap')) closeDrops();
+});
+
+$('#msgSearch').onclick = () => loadMessages(1);
+$('#kw').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); loadMessages(1); } });
+$('#vidChipClear').onclick = e => { e.stopPropagation(); filterByVisitor(''); };
+$('#topSearchForm').addEventListener('submit', e => {
+  e.preventDefault();
+  searchByKeyword($('#topSearch').value.trim());
+});
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === '/') {
+    e.preventDefault();
+    $('#topSearch').focus();
+  }
+});
+
+const ham = $('#hamburger'), mask = $('#mask');
+ham.addEventListener('click', () => {
+  if (isMobile()) {
+    const open = $('#sidebar').classList.toggle('open');
+    mask.classList.toggle('show', open);
+    ham.setAttribute('aria-expanded', open ? 'true' : 'false');
+  } else {
+    const collapsed = $('#sidebar').classList.toggle('collapsed');
+    ham.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+  }
+});
+mask.addEventListener('click', closeDrawer);
+$('#sidebarClose').onclick = closeDrawer;
+$('#btnBell').onclick = async e => {
+  e.stopPropagation();
+  toggleDrop('dropNotify', e.currentTarget);
+  if (!$('#dropNotify').hidden) {
+    loadHeaderFeeds();
+    try {
+      await apiSend('inbox/read', { method: 'POST' });
+      setBadge('#badgeBell', 0);
+    } catch (err) {}
+  }
+};
+$('#btnList').onclick = e => {
+  e.stopPropagation();
+  closeDrops();
+  if ($('#aside').classList.contains('open')) closeAside();
+  else openAside('activity');
+};
+$('#btnMail').onclick = e => {
+  e.stopPropagation();
+  toggleDrop('dropMail', e.currentTarget);
+  if (!$('#dropMail').hidden) loadHeaderFeeds();
+};
+$('#btnLang').onclick = e => { e.stopPropagation(); toggleDrop('dropLang', e.currentTarget); };
+$('#btnSun').onclick = () => {
+  closeDrops();
+  applyNight(!document.documentElement.classList.contains('admin-night'));
+};
+$('#topAvatar').onclick = e => { e.stopPropagation(); toggleDrop('dropUser', e.currentTarget); };
+$('#btnApps').onclick = e => { e.stopPropagation(); toggleDrop('dropApps', e.currentTarget); };
+$('#dropOnline').onclick = async e => {
+  e.stopPropagation();
+  if ($('#brandOnlineLock').classList.contains('on')) {
+    toast('已锁定为 AI 24 小时在线');
+    closeDrops();
+    return;
+  }
+  const on = !$('#brandOnline').classList.contains('on');
+  try {
+    paintAppearance(await apiSend('settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ online: on }),
+    }));
+    toast(on ? '聊天页已设为在线' : '聊天页已设为离线');
+    closeDrops();
+  } catch (err) {
+    if (err.message !== 'unauth') toast(err.message || '保存失败');
+  }
+};
+$('#asideClose').onclick = closeAside;
+$('#asideMask').onclick = closeAside;
+document.querySelectorAll('.aside-tabs button').forEach(b => {
+  b.onclick = () => switchAside(b.dataset.aside);
+});
+$('#themePick').addEventListener('click', e => {
+  const btn = e.target.closest('[data-theme]');
+  if (btn) applyTheme(btn.dataset.theme);
+});
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (document.querySelector('.drop:not([hidden])')) closeDrops();
+  else if ($('#aside').classList.contains('open')) closeAside();
+  else closeDrawer();
+});
+window.addEventListener('resize', () => { if (!isMobile()) closeDrawer(); });
+
+function bindSwitch(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.onclick = () => {
+    const on = !el.classList.contains('on');
+    el.classList.toggle('on', on);
+    el.setAttribute('aria-checked', on ? 'true' : 'false');
+  };
+}
+['capImg','capFile','capVoice','routeSticky','hoursOn'].forEach(bindSwitch);
+
+async function loadStaff() {
+  const data = await api('staff');
+  let groups = [];
+  try { groups = ((await api('skill-groups')).data || []); } catch (e) { groups = []; }
+  const rows = data.data || [];
+  $('#staffBody').innerHTML = rows.length
+    ? rows.map(s =>
+      `<tr><td>${esc(s.login_name)}</td><td>${esc(s.name)}</td><td>${esc(s.role)}</td>` +
+      `<td>${esc(s.skill_group_name || '')}</td><td>${esc(s.max_chats)}</td>` +
+      `<td>${esc(s.presence)}${s.enabled ? '' : ' · 停用'}</td>` +
+      `<td><button type="button" class="btn-quiet" data-off="${s.id}">${s.presence==='online'?'强制下线':'上线'}</button> ` +
+      `<button type="button" class="btn-quiet" data-del="${s.id}">删除</button></td></tr>`
+    ).join('')
+    : '<tr><td colspan="7" class="muted">还没有坐席。填登录名、显示名、至少 4 位密码，再点添加。</td></tr>';
+  $('#staffBody').onclick = async e => {
+    try {
+      const off = e.target.closest('[data-off]');
+      const del = e.target.closest('[data-del]');
+      if (off) {
+        const row = rows.find(x => String(x.id) === off.dataset.off);
+        await apiSend('staff/' + off.dataset.off, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ presence: row && row.presence === 'online' ? 'offline' : 'online' }) });
+        await loadStaff();
+      }
+      if (del && confirm('删除该坐席？')) { await apiSend('staff/' + del.dataset.del, { method: 'DELETE' }); await loadStaff(); }
+    } catch (err) {
+      if (err.message !== 'unauth') toast(err.message || '操作失败');
+    }
+  };
+  window._groups = groups;
+}
+$('#staffAdd') && ($('#staffAdd').onclick = async () => {
+  const login_name = $('#staffLogin').value.trim();
+  const name = $('#staffName').value.trim();
+  const password = $('#staffPass').value;
+  if (!login_name || !name || password.length < 4) {
+    toast('登录名、显示名必填，密码至少 4 位');
+    return;
+  }
+  try {
+    await apiSend('staff', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({
+      login_name, name, password, role: $('#staffRole').value, max_chats: Number($('#staffMax').value || 8),
+      skill_group_id: (window._groups && window._groups[0] && window._groups[0].id) || 1
+    })});
+    $('#staffLogin').value = $('#staffName').value = $('#staffPass').value = '';
+    toast('已添加坐席');
+    await loadStaff();
+  } catch (e) {
+    if (e.message !== 'unauth') toast(e.message || '添加失败');
+  }
+});
+
+function paintVisitorBrand(w) {
+  const cfg = { name: $('#visitorName').value || w.name, logo_url: w.logo_url };
+  setMark($('#visitorPreview'), cfg);
+}
+
+function renderVisitorAvatars(items, max) {
+  const list = items || [];
+  $('#visitorAvCount').textContent = list.length + ' / ' + (max || 24);
+  $('#visitorAvPool').innerHTML = list.map(a =>
+    `<div class="slot"><img src="${esc(a.url)}" alt=""><button type="button" class="x" data-av="${esc(a.name)}" aria-label="删除">×</button></div>`
+  ).join('') || '<p class="hint">还没有客户头像，上传后聊天页右侧才会显示图片。</p>';
+}
+
+async function loadVisitorAvatars() {
+  const av = await api('visitor-avatars');
+  renderVisitorAvatars(av.data || [], av.max);
+}
+
+async function loadBrands() {
+  const w = await api('settings');
+  const b = ((await api('brands')).data || [])[0] || {};
+  window._brandId = b.id;
+  $('#visitorName').value = b.name || w.name || '客服小美';
+  paintVisitorBrand(w);
+  $('#brandWelcome').value = b.welcome || w.guide_text || '';
+  $('#brandHandoff').value = b.handoff_keywords || '转人工,人工客服,找人工';
+  $('#capImg').classList.toggle('on', b.allow_image !== false);
+  $('#capFile').classList.toggle('on', b.allow_file !== false);
+  $('#capVoice').classList.toggle('on', b.allow_voice !== false);
+  await loadVisitorAvatars();
+}
+$('#brandCfgSave') && ($('#brandCfgSave').onclick = async () => {
+  if (!window._brandId) { toast('客服通道还没加载到，请刷新后再试'); return; }
+  const name = $('#visitorName').value.trim();
+  if (!name) { toast('请填写机器人名称'); return; }
+  try {
+    await apiSend('brands/' + window._brandId, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({
+      name, welcome: $('#brandWelcome').value, handoff_keywords: $('#brandHandoff').value,
+      allow_image: $('#capImg').classList.contains('on'),
+      allow_file: $('#capFile').classList.contains('on'),
+      allow_voice: $('#capVoice').classList.contains('on'),
+    })});
+    toast('已保存');
+  } catch (e) {
+    if (e.message !== 'unauth') toast(e.message || '保存失败');
+  }
+});
+$('#visitorLogoPick') && ($('#visitorLogoPick').onclick = () => $('#visitorLogoFile').click());
+$('#visitorLogoFile') && ($('#visitorLogoFile').onchange = async () => {
+  const f = $('#visitorLogoFile').files[0];
+  $('#visitorLogoFile').value = '';
+  if (!f) return;
+  const fd = new FormData();
+  fd.append('file', f);
+  try {
+    paintVisitorBrand(await apiSend('logo', { method: 'POST', body: fd }));
+    toast('机器人头像已更新');
+  } catch (e) {
+    if (e.message !== 'unauth') toast(e.message || '上传失败');
+  }
+});
+$('#visitorLogoClear') && ($('#visitorLogoClear').onclick = async () => {
+  try {
+    paintVisitorBrand(await apiSend('logo', { method: 'DELETE' }));
+    toast('已恢复默认机器人头像');
+  } catch (e) {
+    if (e.message !== 'unauth') toast(e.message || '操作失败');
+  }
+});
+$('#visitorAvPick') && ($('#visitorAvPick').onclick = () => $('#visitorAvFile').click());
+$('#visitorAvFile') && ($('#visitorAvFile').onchange = async () => {
+  const files = [...$('#visitorAvFile').files];
+  $('#visitorAvFile').value = '';
+  if (!files.length) return;
+  const fd = new FormData();
+  files.forEach(f => fd.append('files', f));
+  try {
+    const av = await apiSend('visitor-avatars', { method: 'POST', body: fd });
+    renderVisitorAvatars(av.data || [], av.max);
+    toast('已上传 ' + files.length + ' 张客户头像');
+  } catch (e) {
+    if (e.message !== 'unauth') toast(e.message || '上传失败');
+  }
+});
+$('#visitorAvPool') && ($('#visitorAvPool').onclick = async e => {
+  const b = e.target.closest('[data-av]');
+  if (!b) return;
+  try {
+    const av = await apiSend('visitor-avatars/' + encodeURIComponent(b.dataset.av), { method: 'DELETE' });
+    renderVisitorAvatars(av.data || [], av.max);
+    toast('已删除');
+  } catch (err) {
+    if (err.message !== 'unauth') toast(err.message || '删除失败');
+  }
+});
+
+async function loadRouting() {
+  const r = await api('routing');
+  $('#routeMode').value = r.routing_mode || 'least_busy';
+  $('#routeSticky').classList.toggle('on', !!r.sticky_enabled);
+  const h = r.business_hours || {};
+  $('#hoursOn').classList.toggle('on', !!h.enabled);
+  $('#hoursStart').value = h.start || '09:00';
+  $('#hoursEnd').value = h.end || '18:00';
+  const g = await api('skill-groups');
+  $('#groupList').innerHTML = (g.data || []).map(x =>
+    `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--hairline)">${esc(x.name)}` +
+    (x.id===1?'':'<button type="button" class="btn-quiet" data-gid="'+x.id+'">删除</button>') + '</div>'
+  ).join('');
+  $('#groupList').onclick = async e => {
+    const b = e.target.closest('[data-gid]');
+    if (b) { await apiSend('skill-groups/' + b.dataset.gid, { method: 'DELETE' }); loadRouting(); }
+  };
+}
+$('#routeSave') && ($('#routeSave').onclick = async () => {
+  try {
+    await apiSend('routing', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({
+      routing_mode: $('#routeMode').value, sticky_enabled: $('#routeSticky').classList.contains('on'),
+      business_hours: { enabled: $('#hoursOn').classList.contains('on'), start: $('#hoursStart').value, end: $('#hoursEnd').value, days: [1,2,3,4,5] }
+    })});
+    toast('路由已保存');
+  } catch (e) {
+    if (e.message !== 'unauth') toast(e.message || '保存失败');
+  }
+});
+$('#groupAdd') && ($('#groupAdd').onclick = async () => {
+  try {
+    const name = $('#groupName').value.trim();
+    if (!name) { toast('请填写组名'); return; }
+    await apiSend('skill-groups', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name }) });
+    $('#groupName').value = '';
+    await loadRouting();
+  } catch (e) {
+    if (e.message !== 'unauth') toast(e.message || '添加失败');
+  }
+});
+
+async function loadCanned() {
+  const data = await api('canned');
+  $('#canList').innerHTML = (data.data || []).map(x =>
+    `<div class="can-item"><div><b>${esc(x.title)}</b><div class="hint">${esc(x.content)}</div></div><button type="button" class="btn-quiet" data-cid="${x.id}">删除</button></div>`
+  ).join('') || '<p class="hint">还没有问题和答案。加上之后会出现在聊天页欢迎语下面。</p>';
+  $('#canList').onclick = async e => {
+    const b = e.target.closest('[data-cid]');
+    if (b) { await apiSend('canned/' + b.dataset.cid, { method: 'DELETE' }); loadCanned(); }
+  };
+}
+$('#canAdd') && ($('#canAdd').onclick = async () => {
+  try {
+    const title = $('#canTitle').value.trim();
+    const content = $('#canBody').value.trim();
+    if (!title || !content) { toast('问题和答案都要填'); return; }
+    await apiSend('canned', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ title, content }) });
+    $('#canTitle').value = $('#canBody').value = '';
+    toast('已添加，刷新聊天页就能点');
+    await loadCanned();
+  } catch (e) {
+    if (e.message !== 'unauth') toast(e.message || '添加失败');
+  }
+});
+
+async function loadReports() {
+  const csat = await api('csat');
+  $('#csatBox').textContent = '评价 ' + (csat.count || 0) + ' 条，平均 ' + (csat.avg || 0) + ' 分';
+  const rep = await api('reports/agents');
+  $('#reportBody').innerHTML = (rep.data || []).map(s =>
+    `<tr><td>${esc(s.name)}</td><td>${esc(s.presence)}</td><td>${s.assigned_total||0}</td><td>${s.open_now||0}</td><td>${s.replies||0}</td></tr>`
+  ).join('');
+}
+
 (async () => {
-  try { await api('visitors'); $('#app').classList.remove('hidden'); $('#login').classList.add('hidden'); loadForTab('messages'); }
-  catch(e) { showLogin(); }
+  try { await api('visitors'); afterLogin(); }
+  catch (e) { showLogin(); }
 })();
 </script>
 </body>

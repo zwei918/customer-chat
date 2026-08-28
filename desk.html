@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>坐席工作台</title>
+<style>
+:root{
+  --sidebar:#212631; --canvas:#ebedef; --surface:#fff; --ink:#252b36;
+  --ink-muted:rgba(37,43,54,.68); --hairline:#dbdfe6; --action:#321fdb;
+  --live:#1b9e3e; --error:#e55353; --fill:#f3f4f7; --radius:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"PingFang SC",sans-serif;background:var(--canvas);color:var(--ink);height:100dvh;overflow:hidden}
+.hidden{display:none!important}
+#login{max-width:400px;margin:18vh auto;background:#fff;border:1px solid var(--hairline);border-radius:8px;padding:36px 32px}
+#login h1{font-size:22px;margin-bottom:6px}
+#login p{color:var(--ink-muted);margin-bottom:20px;font-size:14px}
+#login input{width:100%;padding:10px 12px;border:1px solid var(--hairline);border-radius:6px;font:inherit;margin-bottom:10px}
+.btn{background:var(--action);color:#fff;border:0;border-radius:6px;padding:10px 14px;font:inherit;cursor:pointer}
+.btn-quiet{background:var(--fill);color:var(--ink);border:0;border-radius:6px;padding:8px 12px;font:inherit;cursor:pointer}
+.err{color:var(--error);font-size:13px;min-height:18px;margin-bottom:8px}
+.app{display:flex;height:100dvh}
+.rail{width:280px;background:var(--sidebar);color:#fff;display:flex;flex-direction:column;flex-shrink:0}
+.rail-head{padding:16px;border-bottom:1px solid #323a49;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.rail-head b{font-size:15px}
+.queues{display:flex;gap:4px;padding:10px;flex-wrap:wrap}
+.queues button{flex:1;background:transparent;color:rgba(255,255,255,.7);border:0;padding:8px;border-radius:6px;cursor:pointer;font:inherit;font-size:13px}
+.queues button.on{background:rgba(255,255,255,.12);color:#fff}
+.list{flex:1;overflow:auto}
+.item{display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;background:none;border:0;color:#fff;padding:12px 16px;cursor:pointer;border-bottom:1px solid #323a49}
+.item:hover,.item.on{background:rgba(255,255,255,.08)}
+.item .vav{width:32px;height:32px;border-radius:50%;object-fit:cover;background:#323a49;flex-shrink:0}
+.item .vav-fallback{width:32px;height:32px;border-radius:50%;background:#323a49;flex-shrink:0}
+.item .body{min-width:0;flex:1}
+.item .meta{font-size:12px;color:rgba(255,255,255,.5);margin-top:4px}
+.item .preview{font-size:13px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
+.chat{flex:1;overflow:auto;padding:20px}
+.row{display:flex;align-items:flex-end;gap:8px;margin:8px 0}
+.row.v{flex-direction:row-reverse}
+.row .vav{width:28px;height:28px;border-radius:50%;object-fit:cover;background:#d9dde6;flex-shrink:0}
+.bubble{max-width:72%;padding:10px 14px;border-radius:14px;font-size:15px;line-height:1.45;white-space:pre-wrap;word-break:break-word}
+.stage{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--canvas)}
+.top{height:56px;background:#fff;border-bottom:1px solid var(--hairline);display:flex;align-items:center;gap:10px;padding:0 16px}
+.top h2{font-size:16px;font-weight:600;flex:1}
+.bubble.v{background:#321fdb;color:#fff}
+.bubble.a{background:#fff;border:1px solid var(--hairline)}
+.bubble.s{margin:12px auto;background:transparent;color:var(--ink-muted);font-size:12px;text-align:center}
+.composer{background:#fff;border-top:1px solid var(--hairline);padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.composer textarea{width:100%;min-height:44px;max-height:120px;border:1px solid var(--hairline);border-radius:8px;padding:10px;font:inherit;resize:none}
+.canned{display:flex;gap:6px;flex-wrap:wrap}
+.canned button{border:1px solid var(--hairline);background:#fff;border-radius:980px;padding:4px 10px;font-size:12px;cursor:pointer}
+.empty{margin:auto;color:var(--ink-muted);text-align:center;padding:40px}
+a.nav{color:rgba(255,255,255,.7);font-size:13px;padding:12px 16px;text-decoration:none}
+a.nav:hover{color:#fff}
+</style>
+</head>
+<body>
+<div id="login">
+  <h1>坐席工作台</h1>
+  <p>认领排队会话，直接回复访客。超管可用环境密码登录后去中台建账号。</p>
+  <form id="loginForm">
+    <div class="err" id="err"></div>
+    <input id="user" placeholder="登录名（超管可空）" autocomplete="username">
+    <input id="pw" type="password" placeholder="密码" autocomplete="current-password" required>
+    <button class="btn" type="submit" id="loginBtn" style="width:100%">登录</button>
+  </form>
+</div>
+<div id="app" class="app hidden">
+  <aside class="rail">
+    <div class="rail-head">
+      <b id="meName">坐席</b>
+      <button class="btn-quiet" id="presenceBtn" type="button">在线</button>
+    </div>
+    <div class="queues">
+      <button type="button" data-q="queued" class="on">待接</button>
+      <button type="button" data-q="mine">我的</button>
+      <button type="button" data-q="all">全部</button>
+    </div>
+    <div class="list" id="convList"></div>
+    <a class="nav" href="/admin">运营中台</a>
+    <button class="btn-quiet" id="logoutBtn" type="button" style="margin:8px 16px 16px">退出</button>
+  </aside>
+  <section class="stage">
+    <div class="top">
+      <h2 id="title">选择一个会话</h2>
+      <button class="btn-quiet" id="claimBtn" type="button" hidden>认领</button>
+      <button class="btn-quiet" id="resolveBtn" type="button" hidden>结束</button>
+    </div>
+    <div class="chat" id="chat"><div class="empty">待接队列里的会话认领后，可以在这里回复访客。<br>机器人仍在接待的会话会出现在「全部」。</div></div>
+    <div class="composer hidden" id="composer">
+      <div class="canned" id="canned"></div>
+      <textarea id="reply" placeholder="输入回复，Enter 发送"></textarea>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <select id="transferSel" hidden></select>
+        <button class="btn-quiet" id="transferBtn" type="button" hidden>转接</button>
+        <button class="btn" id="sendBtn" type="button">发送</button>
+      </div>
+    </div>
+  </section>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+let me = null, queue = 'queued', current = '', convs = [], canned = [], presence = 'online';
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+async function api(path, opt={}) {
+  const r = await fetch('/admin/api/' + path, { credentials: 'include', headers: {'Content-Type':'application/json', ...(opt.headers||{})}, ...opt });
+  if (r.status === 401) { showLogin(); throw new Error('unauth'); }
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.detail || data.error || r.status);
+  return data;
+}
+
+function showLogin() {
+  $('#app').classList.add('hidden');
+  $('#login').classList.remove('hidden');
+}
+
+async function afterLogin() {
+  me = await api('me');
+  $('#meName').textContent = me.name || me.login_name || '坐席';
+  $('#login').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+  await loadCanned();
+  await loadList();
+  startLive();
+}
+
+$('#loginForm').onsubmit = async e => {
+  e.preventDefault();
+  $('#err').textContent = '';
+  $('#loginBtn').disabled = true;
+  try {
+    const r = await fetch('/admin/login', {
+      method: 'POST', credentials: 'include',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ username: $('#user').value.trim(), password: $('#pw').value })
+    });
+    if (r.ok) afterLogin();
+    else $('#err').textContent = r.status === 503 ? '后台未配置密码' : '账号或密码错误';
+  } catch (e) { $('#err').textContent = '网络不可用'; }
+  $('#loginBtn').disabled = false;
+};
+
+document.querySelectorAll('.queues button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.queues button').forEach(x => x.classList.toggle('on', x === b));
+  queue = b.dataset.q;
+  loadList();
+});
+
+async function loadList() {
+  const data = await api('inbox?queue=' + queue);
+  convs = data.data || [];
+  $('#convList').innerHTML = convs.map(s =>
+    `<button class="item${s.session_id===current?' on':''}" data-id="${esc(s.session_id)}">
+      ${s.visitor_avatar_url ? `<img class="vav" src="${esc(s.visitor_avatar_url)}" alt="">` : '<span class="vav-fallback"></span>'}
+      <div class="body">
+      <div>${esc(s.visitor_id || s.session_id)}</div>
+      <div class="preview">${esc(s.last_content || '')}</div>
+      <div class="meta">${esc(s.status)} · ${esc(s.assignee_name || '未分配')} · ${esc(s.last_msg_at || '')}</div>
+      </div>
+    </button>`
+  ).join('') || '<div class="empty" style="color:rgba(255,255,255,.5)">这一栏暂时没有会话</div>';
+  $('#convList').querySelectorAll('.item').forEach(el => el.onclick = () => openConv(el.dataset.id));
+}
+
+async function loadCanned() {
+  try { canned = (await api('canned')).data || []; } catch (e) { canned = []; }
+  $('#canned').innerHTML = canned.map(x => `<button type="button" data-c="${esc(x.content)}">${esc(x.title)}</button>`).join('');
+  $('#canned').querySelectorAll('button').forEach(b => b.onclick = () => { $('#reply').value = b.dataset.c; $('#reply').focus(); });
+}
+
+async function openConv(id) {
+  current = id;
+  const data = await api('inbox/' + encodeURIComponent(id) + '/messages');
+  const sess = data.session || {};
+  $('#title').textContent = (sess.visitor_id || id) + ' · ' + (sess.status || '');
+  const mine = me && me.staff_id && Number(sess.assignee_id) === Number(me.staff_id);
+  const queued = sess.status === 'queued';
+  $('#claimBtn').hidden = !queued || !me.staff_id;
+  $('#resolveBtn').hidden = !(mine || me.is_ops) || sess.status === 'resolved';
+  $('#composer').classList.toggle('hidden', !(mine || (me.is_ops && sess.status === 'assigned')));
+  const canAct = mine || (me.is_ops && sess.status === 'assigned');
+  $('#transferSel').hidden = !canAct;
+  $('#transferBtn').hidden = !canAct;
+  if (canAct) loadAgents();
+  const av = sess.visitor_avatar_url;
+  $('#chat').innerHTML = (data.data || []).map(m => {
+    const kind = m.sender_type === 'visitor' || m.direction === 'customer' ? 'v' : (m.sender_type === 'system' ? 's' : 'a');
+    if (kind === 's') return `<div class="bubble s">${esc(m.content)}</div>`;
+    const img = kind === 'v' && av ? `<img class="vav" src="${esc(av)}" alt="">` : '';
+    return `<div class="row ${kind}">${img}<div class="bubble ${kind}">${esc(m.content)}</div></div>`;
+  }).join('') || '<div class="empty">还没有消息</div>';
+  $('#chat').scrollTop = $('#chat').scrollHeight;
+  document.querySelectorAll('.item').forEach(el => el.classList.toggle('on', el.dataset.id === id));
+}
+
+$('#claimBtn').onclick = async () => {
+  await api('inbox/' + encodeURIComponent(current) + '/claim', { method: 'POST', body: '{}' });
+  queue = 'mine';
+  document.querySelectorAll('.queues button').forEach(x => x.classList.toggle('on', x.dataset.q === 'mine'));
+  await loadList();
+  openConv(current);
+};
+$('#resolveBtn').onclick = async () => {
+  await api('inbox/' + encodeURIComponent(current) + '/resolve', { method: 'POST', body: '{}' });
+  await loadList();
+  openConv(current);
+};
+$('#sendBtn').onclick = sendReply;
+$('#reply').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(); } });
+
+async function sendReply() {
+  const text = $('#reply').value.trim();
+  if (!text || !current) return;
+  await api('inbox/' + encodeURIComponent(current) + '/reply', { method: 'POST', body: JSON.stringify({ text }) });
+  $('#reply').value = '';
+  openConv(current);
+  loadList();
+}
+
+async function loadAgents() {
+  try {
+    const data = await api('agents');
+    $('#transferSel').innerHTML = (data.data || [])
+      .filter(s => Number(s.id) !== Number(me.staff_id))
+      .map(s => `<option value="${s.id}">${esc(s.name)} (${esc(s.login_name)})</option>`).join('');
+  } catch (e) {}
+}
+
+$('#transferBtn').onclick = async () => {
+  const sid = $('#transferSel').value;
+  if (!sid || !current) return;
+  await api('inbox/' + encodeURIComponent(current) + '/transfer', { method: 'POST', body: JSON.stringify({ staff_id: Number(sid) }) });
+  await loadList();
+  openConv(current);
+};
+  presence = presence === 'online' ? 'away' : 'online';
+  await api('presence', { method: 'POST', body: JSON.stringify({ presence }) });
+  $('#presenceBtn').textContent = presence === 'online' ? '在线' : '离开';
+};
+$('#logoutBtn').onclick = async () => {
+  await fetch('/admin/logout', { method: 'POST', credentials: 'include' });
+  showLogin();
+};
+
+let es;
+function startLive() {
+  if (es) es.close();
+  es = new EventSource('/admin/api/live');
+  es.onmessage = () => { loadList(); if (current) openConv(current); };
+}
+
+fetch('/admin/api/me', { credentials: 'include' }).then(r => { if (r.ok) afterLogin(); }).catch(() => {});
+</script>
+</body>
+</html>
