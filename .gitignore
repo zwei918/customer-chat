@@ -1,9 +1,14 @@
-# 数据与密钥
+# 数据与密钥（data.db 入库方便部署；WAL 分片不提交）
 *.db
+!data.db
 *.db-*
 .env
 .admin_password
 .admin_secret
+.venv/
+
+# macOS
+.DS_Store
 
 # 备份与缓存
 *.bak

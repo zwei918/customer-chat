@@ -1,6 +1,50 @@
 # 客服小美 (xiaomei-chat)
 
+> Cursor 总工作台项目：`Project_03_客服小美`。2026-08-26 从 GitHub `zwei918/customer-chat` clone 到本机开发。
+
 客户网页 AI 客服——客户在网页发消息，AI（AstrBot 大脑 + 知识库）自动回复。
+
+| | |
+|---|---|
+| 代码仓库 | https://github.com/zwei918/customer-chat |
+| 来源账号 | `chenxi5378-oss/customer-chat` 仍在，日常推送到 zwei918 |
+| 线上聊天 | https://chat.okva.cc |
+| 运营后台 | https://admin01.okva.cc |
+
+## 项目目标
+
+维护综合性在线客服平台：访客 H5 通道 + 坐席工作台 + 运营中台 + FastAPI / AstrBot 机器人通道（SSE）。「客服小美」只是默认机器人昵称。
+
+## 当前状态
+
+- 状态：进行中（V1 本机可运行：访客 H5 + 坐席工作台 + 运营中台）
+- 最近更新：2026-08-29
+- 下一步：上线前在服务器补齐 `ADMIN_PASSWORD` + `ADMIN_SECRET`（禁止默认 `changeme-secret`），再重启 Supervisor；生产验证 AstrBot 对话、转人工与坐席回复。欢迎语和客户头像在「客服通道」，问题和答案在「快捷回复」。
+- 视觉：聊天页苹果原则；后台按 Figma CoreUI 骨架。顶栏七个图标和运营看板都接 H5 真实会话，不搬稿里的交通图和社交假数据。
+
+## 目录说明
+
+- `index.html` / `desk.html` / `admin.html`：访客通道、坐席工作台、运营中台。
+- `DESIGN.md`：视觉规范（苹果原则 + Intercom 对话清晰度 + Cal 后台密度）。
+- `main.py` / `admin_api.py` / `db.py` / `routing.py` / `live.py`：FastAPI 服务、路由分配与 SQLite。
+- `docs/`：需求、方案、资料。
+- `work/`：过程文件、草稿、实验。
+- `outputs/`：最终交付物。
+- `logs/`：项目日志和复盘。
+
+## 常用命令
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install fastapi uvicorn httpx python-multipart
+ADMIN_PASSWORD=<后台密码> ADMIN_SECRET=<随机长串> \
+ASTRBOT_API_KEY=<key> ASTRBOT_URL=http://localhost:6185 \
+  .venv/bin/uvicorn main:app --host 127.0.0.1 --port 6200
+```
+
+聊天页：`http://127.0.0.1:6200/`  
+坐席工作台：`http://127.0.0.1:6200/desk`  
+运营中台：`http://127.0.0.1:6200/admin`
 
 ## 架构
 
@@ -37,24 +81,28 @@
 - **运营看板** — 累计/今日访客、会话、消息、附件数 + 高频关键词
 - **转人工** — 预留（sessions.status='active'|'handoff' + 后台按钮 disabled"即将上线"），本期未启用
 
-数据层：SQLite `data.db`（WAL），`db.py` 三表（visitors/sessions/messages）+ 索引 + 落库，管理员 cookie 鉴权（HttpOnly/Secure + 登录限速）。
-后台登录密码：服务器 `/www/wwwroot/chat-xiaomei/.admin_password`（环境变量 `ADMIN_PASSWORD`）。
+数据层：SQLite `data.db`（WAL），`db.py` 三表（visitors/sessions/messages）+ 索引 + 落库。
+管理员 cookie 可吊销（登录换新 token，logout 立刻失效）；未配置 `ADMIN_PASSWORD` 或 `ADMIN_SECRET` 仍为默认值时，后台接口拒绝服务。
+后台密码与签名密钥只走环境变量或服务器未跟踪文件 `/www/wwwroot/chat-xiaomei/.admin_password`、`.admin_secret`，不要写入 git。
+公开接口按访客+IP 限速：聊天 30 次/分、上传 20 次/分。登录只计失败次数。
 
 ## 部署
 
 ```bash
 # WSL2
 cd /www/wwwroot/chat-xiaomei
-python3 -m venv .venv && .venv/bin/pip install fastapi uvicorn httpx
-ASTRBOT_API_KEY=<key> ASTRBOT_URL=http://localhost:6185 .venv/bin/uvicorn main:app --host 0.0.0.0 --port 6200
+python3 -m venv .venv && .venv/bin/pip install fastapi uvicorn httpx python-multipart
+ADMIN_PASSWORD=<后台密码> ADMIN_SECRET=<随机长串> \
+ASTRBOT_API_KEY=<key> ASTRBOT_URL=http://localhost:6185 \
+  .venv/bin/uvicorn main:app --host 0.0.0.0 --port 6200
 ```
 
-Supervisor 托管（宝塔）：
+Supervisor 托管（宝塔）。**上线前必须写上这两个变量**，缺一个后台进不去；`ADMIN_SECRET` 不能是 `changeme-secret`。部署本版会让已登录后台的 cookie 失效一次，重新登录即可。
 ```
 [program:chat-xiaomei]
 command=/www/wwwroot/chat-xiaomei/.venv/bin/uvicorn main:app --host 0.0.0.0 --port 6200
 directory=/www/wwwroot/chat-xiaomei
-environment=ASTRBOT_API_KEY="<key>",ASTRBOT_URL="http://localhost:6185"
+environment=ADMIN_PASSWORD="<后台密码>",ADMIN_SECRET="<随机长串>",ASTRBOT_API_KEY="<key>",ASTRBOT_URL="http://localhost:6185"
 user=www
 autostart=true
 autorestart=true
@@ -84,5 +132,6 @@ WebUI → 知识库，上传文档后客户问答自动检索（faiss+BM25）。
 ## 安全
 
 - 客服页面公网只暴露 6200 代理，AstrBot 管理端 6185 不经公网（astrbot.okva.cc 需登录）
-- ApiKey 只在服务端环境变量，客户页面接触不到
+- ApiKey、后台密码、`ADMIN_SECRET` 只在服务端环境变量，客户页面接触不到
+- 未配置 `ADMIN_PASSWORD` 或仍用默认 `ADMIN_SECRET=changeme-secret` 时，后台登录与 `/admin/api` 直接拒绝
 - AstrBot 历史 CVE 集中在 WebUI/插件安装链，面板务必改强密码 + 开双因素

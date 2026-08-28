@@ -1,0 +1,15 @@
+---
+description: 客服小美项目工作规则。开始任务前先读 AGENTS.md 和 README.md。
+alwaysApply: true
+---
+
+# 客服小美
+
+- 只在本项目目录内写项目文件。
+- 最终交付物放入 `outputs/`。
+- 过程文件放入 `work/`。
+- 项目经验放入 `logs/`。
+- 跨项目经验再沉淀到 `/Users/chen/Cursor/Cursor总工作台`。
+- 日常推送到 `zwei918/customer-chat`，不要推回 `chenxi5378-oss`。
+- ApiKey 和后台密码不进 git。
+- 编码遵守四条军规：先思考、简单优先、外科手术式修改、目标驱动验证。
