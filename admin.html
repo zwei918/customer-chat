@@ -62,6 +62,12 @@ a{color:var(--action);text-decoration:none}
 #login .btn:hover{background:var(--action-press)}
 #login .btn:disabled{opacity:.45;cursor:not-allowed}
 #login .err{color:var(--error);font-size:13px;margin-bottom:12px;min-height:18px}
+#login .login-langs{display:flex;justify-content:center;gap:20px;margin-top:18px}
+#login .login-langs .lang-row{
+  width:auto;padding:4px 0;background:none;color:var(--ink-muted);font-size:13px;font-weight:500;
+}
+#login .login-langs .lang-row.on{color:var(--action);font-weight:600}
+#login .login-langs .lang-row:hover{background:none}
 
 #app{display:flex;min-height:100dvh}
 .sidebar{
@@ -326,9 +332,10 @@ tr.clickable{cursor:pointer}
   width:32px;height:32px;border-radius:50%;background:var(--fill);color:var(--ink);
   display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;
 }
-.lang-row{display:flex;justify-content:space-between;align-items:center;width:100%;padding:10px 16px;background:none;font-family:inherit;color:var(--ink);font-size:14px}
+.lang-row{display:flex;justify-content:space-between;align-items:center;width:100%;padding:10px 16px;background:none;font-family:inherit;color:var(--ink);font-size:14px;cursor:pointer}
 .lang-row.on{color:var(--action);font-weight:600}
-.lang-row:disabled{opacity:.45;cursor:not-allowed}
+.lang-row:hover{background:var(--fill)}
+html[lang="en"] .card.loading::after{content:"Loading"}
 .app-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px}
 .app-grid button,.app-grid a{
   display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;
@@ -507,18 +514,22 @@ html.admin-night .card.loading::after{background:rgba(42,48,60,.8)}
 </style>
 </head>
 <body>
-<a class="skip" href="#crumbNow">跳到主内容</a>
+<a class="skip" href="#crumbNow" data-i18n="skip">跳到主内容</a>
 <div id="toast" role="status"></div>
 
 <div id="login">
-  <h1>运营中台</h1>
-  <p>客服平台 · 会话 24 小时有效。坐席请走 <a href="/desk">工作台</a>。</p>
+  <h1 data-i18n="login.title">运营中台</h1>
+  <p><span data-i18n="login.lead">客服平台 · 会话 24 小时有效。坐席请走</span> <a href="/desk" data-i18n="login.desk">工作台</a>。</p>
   <form id="loginForm">
     <div class="err" id="err" role="alert"></div>
-    <input id="loginUser" placeholder="登录名（超管可空）" autocomplete="username">
-    <input id="pw" type="password" placeholder="密码" autocomplete="current-password" required>
-    <button class="btn" id="loginBtn" type="submit">登录</button>
+    <input id="loginUser" placeholder="登录名（超管可空）" data-i18n-ph="login.user" autocomplete="username">
+    <input id="pw" type="password" placeholder="密码" data-i18n-ph="login.pw" autocomplete="current-password" required>
+    <button class="btn" id="loginBtn" type="submit" data-i18n="login.submit">登录</button>
   </form>
+  <div class="login-langs">
+    <button type="button" class="lang-row on" data-lang="zh">简体中文</button>
+    <button type="button" class="lang-row" data-lang="en">English</button>
+  </div>
 </div>
 
 <div id="app" class="hidden">
@@ -528,54 +539,54 @@ html.admin-night .card.loading::after{background:rgba(42,48,60,.8)}
         <span class="brand-mark" id="brandMark">美</span>
         <span class="brand-name">运营中台</span>
       </div>
-      <button class="sidebar-close" id="sidebarClose" type="button" aria-label="关闭菜单">
+      <button class="sidebar-close" id="sidebarClose" type="button" aria-label="关闭菜单" data-i18n-aria="close_menu">
         <img src="/assets/admin/close.png" alt="">
       </button>
     </div>
     <nav class="nav" aria-label="后台栏目">
-      <div class="nav-group">运营</div>
+      <div class="nav-group" data-i18n="nav.ops">运营</div>
       <button type="button" data-tab="dashboard" class="active" aria-current="page">
-        <img src="/assets/admin/ico-dash.svg" alt="" width="20" height="20">运营看板
+        <img src="/assets/admin/ico-dash.svg" alt="" width="20" height="20"><span data-i18n="tab.dashboard">运营看板</span>
       </button>
       <button type="button" data-tab="messages">
-        <img src="/assets/admin/ico-mail.svg" alt="" width="20" height="20">会话记录
+        <img src="/assets/admin/ico-mail.svg" alt="" width="20" height="20"><span data-i18n="tab.messages">会话记录</span>
       </button>
       <button type="button" data-tab="visitors">
-        <img src="/assets/admin/ico-list.svg" alt="" width="20" height="20">访客列表
+        <img src="/assets/admin/ico-list.svg" alt="" width="20" height="20"><span data-i18n="tab.visitors">访客列表</span>
       </button>
-      <div class="nav-group">设置</div>
+      <div class="nav-group" data-i18n="nav.settings">设置</div>
       <button type="button" data-tab="appearance">
-        <img src="/assets/admin/tab-gear.svg" alt="" width="20" height="20">外观设置
+        <img src="/assets/admin/tab-gear.svg" alt="" width="20" height="20"><span data-i18n="tab.appearance">外观设置</span>
       </button>
       <button type="button" data-tab="brands">
-        <img src="/assets/admin/tab-gear.svg" alt="" width="20" height="20">客服通道
+        <img src="/assets/admin/tab-gear.svg" alt="" width="20" height="20"><span data-i18n="tab.brands">客服通道</span>
       </button>
       <button type="button" data-tab="staff">
-        <img src="/assets/admin/ico-list.svg" alt="" width="20" height="20">客服管理
+        <img src="/assets/admin/ico-list.svg" alt="" width="20" height="20"><span data-i18n="tab.staff">客服管理</span>
       </button>
       <button type="button" data-tab="routing">
-        <img src="/assets/admin/ico-apps.svg" alt="" width="20" height="20">路由与排班
+        <img src="/assets/admin/ico-apps.svg" alt="" width="20" height="20"><span data-i18n="tab.routing">路由与排班</span>
       </button>
       <button type="button" data-tab="canned">
-        <img src="/assets/admin/ico-mail.svg" alt="" width="20" height="20">快捷回复
+        <img src="/assets/admin/ico-mail.svg" alt="" width="20" height="20"><span data-i18n="tab.canned">快捷回复</span>
       </button>
       <button type="button" data-tab="reports">
-        <img src="/assets/admin/ico-dash.svg" alt="" width="20" height="20">坐席报表
+        <img src="/assets/admin/ico-dash.svg" alt="" width="20" height="20"><span data-i18n="tab.reports">坐席报表</span>
       </button>
-      <a href="/desk" style="margin:8px 16px;color:rgba(255,255,255,.7);font-size:14px">坐席工作台 →</a>
+      <a href="/desk" style="margin:8px 16px;color:rgba(255,255,255,.7);font-size:14px" data-i18n="nav.desk">坐席工作台 →</a>
     </nav>
-    <button class="logout" id="logoutBtn" type="button">退出登录</button>
+    <button class="logout" id="logoutBtn" type="button" data-i18n="nav.logout">退出登录</button>
   </aside>
 
   <div class="shell">
     <div class="header">
       <div class="topbar">
-        <button class="hamburger" id="hamburger" type="button" aria-label="打开菜单" aria-controls="sidebar" aria-expanded="false">
+        <button class="hamburger" id="hamburger" type="button" aria-label="打开菜单" aria-controls="sidebar" aria-expanded="false" data-i18n-aria="menu">
           <img src="/assets/admin/ico-menu.svg" width="20" height="20" alt="">
         </button>
         <form class="hdr-search" id="topSearchForm">
           <img src="/assets/admin/ico-search.svg" width="18" height="18" alt="">
-          <input id="topSearch" type="search" placeholder="搜索" maxlength="80" enterkeyhint="search" aria-label="搜索">
+          <input id="topSearch" type="search" placeholder="搜索" data-i18n-ph="search" maxlength="80" enterkeyhint="search" aria-label="搜索" data-i18n-aria="search">
           <span class="kbd">⌘</span><span class="kbd">/</span>
         </form>
         <div class="hdr-grow"></div>
@@ -586,9 +597,9 @@ html.admin-night .card.loading::after{background:rgba(42,48,60,.8)}
               <span class="hdr-badge red" id="badgeBell" hidden>0</span>
             </button>
             <div class="drop" id="dropNotify" hidden>
-              <div class="drop-head">客户新消息<small>H5 聊天页里客户刚发来的话</small></div>
-              <div class="drop-body" id="dropNotifyBody"><div class="drop-empty">加载中…</div></div>
-              <button type="button" class="drop-foot" data-jump="messages">查看会话记录</button>
+              <div class="drop-head"><span data-i18n="notify.title">客户新消息</span><small data-i18n="notify.sub">H5 聊天页里客户刚发来的话</small></div>
+              <div class="drop-body" id="dropNotifyBody"><div class="drop-empty" data-i18n="loading">加载中…</div></div>
+              <button type="button" class="drop-foot" data-jump="messages" data-i18n="notify.foot">查看会话记录</button>
             </div>
           </div>
           <button type="button" class="hdr-ico" id="btnList" aria-label="今日动态" aria-controls="aside" aria-expanded="false">
@@ -601,21 +612,21 @@ html.admin-night .card.loading::after{background:rgba(42,48,60,.8)}
               <span class="hdr-badge blue" id="badgeMail" hidden>0</span>
             </button>
             <div class="drop" id="dropMail" hidden>
-              <div class="drop-head">最近会话<small>按访客最近一次开口排序</small></div>
-              <div class="drop-body" id="dropMailBody"><div class="drop-empty">加载中…</div></div>
-              <button type="button" class="drop-foot" data-jump="visitors">查看访客列表</button>
+              <div class="drop-head"><span data-i18n="mail.title">最近会话</span><small data-i18n="mail.sub">按访客最近一次开口排序</small></div>
+              <div class="drop-body" id="dropMailBody"><div class="drop-empty" data-i18n="loading">加载中…</div></div>
+              <button type="button" class="drop-foot" data-jump="visitors" data-i18n="mail.foot">查看访客列表</button>
             </div>
           </div>
         </div>
         <span class="hdr-split desk-only"></span>
-        <div class="hdr-drop-wrap desk-only">
-          <button type="button" class="hdr-tool" id="btnLang" aria-label="界面语言" aria-haspopup="true" aria-expanded="false" aria-controls="dropLang">
+        <div class="hdr-drop-wrap">
+          <button type="button" class="hdr-tool" id="btnLang" aria-label="界面语言" aria-haspopup="true" aria-expanded="false" aria-controls="dropLang" data-i18n-aria="lang.title">
             <img src="/assets/admin/ico-lang.svg" width="20" height="20" alt="">
           </button>
           <div class="drop drop-sm" id="dropLang" hidden>
-            <div class="drop-head">界面语言<small>聊天页与后台目前都是中文</small></div>
-            <button type="button" class="lang-row on" disabled>简体中文</button>
-            <button type="button" class="lang-row" disabled>English（未开通）</button>
+            <div class="drop-head"><span data-i18n="lang.title">界面语言</span><small data-i18n="lang.sub">只改本机后台界面，不影响访客聊天页</small></div>
+            <button type="button" class="lang-row on" data-lang="zh">简体中文</button>
+            <button type="button" class="lang-row" data-lang="en">English</button>
           </div>
         </div>
         <button type="button" class="hdr-tool desk-only" id="btnSun" aria-label="切换深色后台">
@@ -628,9 +639,9 @@ html.admin-night .card.loading::after{background:rgba(42,48,60,.8)}
           </button>
           <div class="drop drop-sm" id="dropUser" hidden>
             <div class="drop-head" id="dropUserName">客服小美<small id="dropUserState">聊天页显示在线</small></div>
-            <button type="button" class="menu-row" id="dropOnline"><b>切换在线状态</b></button>
-            <button type="button" class="menu-row" data-jump="appearance"><b>外观设置</b></button>
-            <button type="button" class="menu-row" id="dropLogout"><b>退出登录</b></button>
+            <button type="button" class="menu-row" id="dropOnline"><b data-i18n="user.online_toggle">切换在线状态</b></button>
+            <button type="button" class="menu-row" data-jump="appearance"><b data-i18n="tab.appearance">外观设置</b></button>
+            <button type="button" class="menu-row" id="dropLogout"><b data-i18n="user.logout">退出登录</b></button>
           </div>
         </div>
         <div class="hdr-drop-wrap desk-only">
@@ -638,18 +649,18 @@ html.admin-night .card.loading::after{background:rgba(42,48,60,.8)}
             <img src="/assets/admin/ico-apps.svg" width="20" height="20" alt="">
           </button>
           <div class="drop drop-apps" id="dropApps" hidden>
-            <div class="drop-head">快捷入口</div>
+            <div class="drop-head" data-i18n="apps.title">快捷入口</div>
             <div class="app-grid">
-              <button type="button" data-jump="dashboard">运营看板</button>
-              <button type="button" data-jump="messages">会话记录</button>
-              <button type="button" data-jump="visitors">访客列表</button>
-              <button type="button" data-jump="appearance">外观设置</button>
-              <a href="/" target="_blank" rel="noopener">打开聊天页</a>
+              <button type="button" data-jump="dashboard" data-i18n="tab.dashboard">运营看板</button>
+              <button type="button" data-jump="messages" data-i18n="tab.messages">会话记录</button>
+              <button type="button" data-jump="visitors" data-i18n="tab.visitors">访客列表</button>
+              <button type="button" data-jump="appearance" data-i18n="tab.appearance">外观设置</button>
+              <a href="/" target="_blank" rel="noopener" data-i18n="apps.chat">打开聊天页</a>
             </div>
           </div>
         </div>
       </div>
-      <nav class="crumb-bar" aria-label="面包屑">家 / <b id="crumbNow">运营看板</b></nav>
+      <nav class="crumb-bar" aria-label="面包屑"><span data-i18n="crumb.home">家</span> / <b id="crumbNow">运营看板</b></nav>
     </div>
 
     <main class="content">
@@ -657,28 +668,28 @@ html.admin-night .card.loading::after{background:rgba(42,48,60,.8)}
 
       <section id="tab-messages" class="hidden" hidden>
         <div class="toolbar">
-          <input id="kw" placeholder="关键词搜索" enterkeyhint="search" maxlength="80">
-          <button class="btn" id="msgSearch" type="button">搜索</button>
-          <span class="chip hidden" id="vidChip">访客 <span id="vidChipText"></span>
+          <input id="kw" placeholder="关键词搜索" data-i18n-ph="msg.kw" enterkeyhint="search" maxlength="80">
+          <button class="btn" id="msgSearch" type="button" data-i18n="msg.search">搜索</button>
+          <span class="chip hidden" id="vidChip"><span data-i18n="msg.visitor">访客</span> <span id="vidChipText"></span>
             <button type="button" class="x" id="vidChipClear" aria-label="清除访客筛选">×</button>
           </span>
-          <span class="badge-dis">转人工已在坐席工作台</span>
+          <span class="badge-dis" data-i18n="msg.handoff">转人工已在坐席工作台</span>
         </div>
         <div class="card" id="msgCard">
           <div class="empty hidden" id="msgEmpty">
-            <p>暂无消息</p>
-            <p class="sub">有客户对话后会出现在这里</p>
+            <p data-i18n="msg.empty">暂无消息</p>
+            <p class="sub" data-i18n="msg.empty_sub">有客户对话后会出现在这里</p>
           </div>
           <div class="table-wrap">
           <table id="msgTable">
-            <thead><tr><th>方向</th><th>类型</th><th>内容</th><th>访客</th><th>时间</th></tr></thead>
+            <thead><tr><th data-i18n="th.dir">方向</th><th data-i18n="th.type">类型</th><th data-i18n="th.content">内容</th><th data-i18n="th.visitor">访客</th><th data-i18n="th.time">时间</th></tr></thead>
             <tbody id="msgBody"></tbody>
           </table>
           </div>
           <div class="pager hidden" id="msgPager">
-            <button type="button" id="msgPrev">上一页</button>
+            <button type="button" id="msgPrev" data-i18n="prev">上一页</button>
             <span id="msgPage"></span>
-            <button type="button" id="msgNext">下一页</button>
+            <button type="button" id="msgNext" data-i18n="next">下一页</button>
             <span class="count" id="msgCount"></span>
           </div>
         </div>
@@ -687,19 +698,19 @@ html.admin-night .card.loading::after{background:rgba(42,48,60,.8)}
       <section id="tab-visitors" class="hidden" hidden>
         <div class="card" id="visCard">
           <div class="empty hidden" id="visEmpty">
-            <p>暂无访客</p>
-            <p class="sub">客户打开聊天页后会出现在这里</p>
+            <p data-i18n="vis.empty">暂无访客</p>
+            <p class="sub" data-i18n="vis.empty_sub">客户打开聊天页后会出现在这里</p>
           </div>
           <div class="table-wrap">
           <table id="visTable">
-            <thead><tr><th>访客 ID</th><th>首次</th><th>最近</th><th>消息数</th></tr></thead>
+            <thead><tr><th data-i18n="th.vid">访客 ID</th><th data-i18n="th.first">首次</th><th data-i18n="th.last">最近</th><th data-i18n="th.count">消息数</th></tr></thead>
             <tbody id="visitorBody"></tbody>
           </table>
           </div>
           <div class="pager hidden" id="visPager">
-            <button type="button" id="visPrev">上一页</button>
+            <button type="button" id="visPrev" data-i18n="prev">上一页</button>
             <span id="visPage"></span>
-            <button type="button" id="visNext">下一页</button>
+            <button type="button" id="visNext" data-i18n="next">下一页</button>
             <span class="count" id="visCount"></span>
           </div>
         </div>
@@ -710,54 +721,54 @@ html.admin-night .card.loading::after{background:rgba(42,48,60,.8)}
         <div class="traffic">
           <div class="traffic-head">
             <div>
-              <h3>近 14 天对话</h3>
-              <p class="sub" id="trafficSub">来自 H5 聊天页的真实消息</p>
+              <h3 data-i18n="dash.14">近 14 天对话</h3>
+              <p class="sub" id="trafficSub" data-i18n="dash.sub">来自 H5 聊天页的真实消息</p>
             </div>
-            <div class="traffic-range" id="trafficRange">最近 14 天</div>
+            <div class="traffic-range" id="trafficRange" data-i18n="dash.range">最近 14 天</div>
           </div>
           <div class="day-bars" id="trafficChart"></div>
           <div class="traffic-foot" id="trafficFoot"></div>
         </div>
         <div class="social-row" id="socialRow"></div>
         <div class="card card-pad" style="margin-top:24px">
-          <h3>高频关键词（客户消息）</h3>
+          <h3 data-i18n="dash.kw">高频关键词（客户消息）</h3>
           <div class="keywords" id="kwList"></div>
         </div>
       </section>
 
       <section id="tab-appearance" class="hidden" hidden>
         <div class="card appear">
-          <h3>运营中台</h3>
-          <p class="hint" style="margin:8px 0 16px">只改侧栏和顶栏的名字、头像，不影响访客聊天页。</p>
+          <h3 data-i18n="appear.title">运营中台</h3>
+          <p class="hint" style="margin:8px 0 16px" data-i18n="appear.hint">只改侧栏和顶栏的名字、头像，不影响访客聊天页。</p>
           <div class="appear-block">
             <div class="appear-preview" id="brandPreview">美</div>
             <div>
               <div class="appear-actions">
-                <button type="button" class="btn" id="logoPick">上传头像</button>
-                <button type="button" class="btn-quiet" id="logoClear">恢复默认</button>
+                <button type="button" class="btn" id="logoPick" data-i18n="appear.upload">上传头像</button>
+                <button type="button" class="btn-quiet" id="logoClear" data-i18n="appear.reset">恢复默认</button>
               </div>
-              <p class="hint" style="margin-top:8px;font-size:13px;color:var(--ink-muted)">正方形 JPG / PNG / WebP，不超过 1MB</p>
+              <p class="hint" style="margin-top:8px;font-size:13px;color:var(--ink-muted)" data-i18n="appear.file">正方形 JPG / PNG / WebP，不超过 1MB</p>
               <input type="file" id="logoFile" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
             </div>
           </div>
-          <label for="brandName">后台显示名称</label>
+          <label for="brandName" data-i18n="appear.name">后台显示名称</label>
           <input class="field" id="brandName" maxlength="32" placeholder="运营中台">
           <div class="appear-row">
             <div>
-              <div style="font-weight:500">在线状态</div>
-              <p class="hint" id="onlineHint">离线时聊天页显示灰色圆点；客户仍可留言</p>
+              <div style="font-weight:500" data-i18n="appear.online">在线状态</div>
+              <p class="hint" id="onlineHint" data-i18n="appear.online_hint">离线时聊天页显示灰色圆点；客户仍可留言</p>
             </div>
             <button type="button" class="switch on" id="brandOnline" role="switch" aria-checked="true" aria-label="在线"></button>
           </div>
           <div class="appear-row">
             <div>
-              <div style="font-weight:500">锁定 AI 一直在线</div>
-              <p class="hint">小美是 24 小时 AI。锁上后聊天页始终绿点，人工不在也不显示离线。</p>
+              <div style="font-weight:500" data-i18n="appear.lock">锁定 AI 一直在线</div>
+              <p class="hint" data-i18n="appear.lock_p">小美是 24 小时 AI。锁上后聊天页始终绿点，人工不在也不显示离线。</p>
             </div>
             <button type="button" class="switch on" id="brandOnlineLock" role="switch" aria-checked="true" aria-label="锁定一直在线"></button>
           </div>
-          <label for="chatBgHex">对话区背景</label>
-          <p class="hint" style="margin-bottom:8px">消息区和底栏一起变色，顶栏不变。欢迎语、机器人头像和客户头像在「客服通道」。</p>
+          <label for="chatBgHex" data-i18n="appear.bg">对话区背景</label>
+          <p class="hint" style="margin-bottom:8px" data-i18n="appear.bg_hint">消息区和底栏一起变色，顶栏不变。欢迎语、机器人头像和客户头像在「客服通道」。</p>
           <div class="appear-color">
             <input type="color" id="chatBg" value="#f2f2f7" aria-label="对话区颜色">
             <input class="field" id="chatBgHex" maxlength="7" value="#f2f2f7" spellcheck="false">
@@ -769,107 +780,107 @@ html.admin-night .card.loading::after{background:rgba(42,48,60,.8)}
             <button type="button" data-bg="#eef6ee" style="background:#eef6ee" title="淡绿"></button>
             <button type="button" data-bg="#1c1c1e" style="background:#1c1c1e" title="深色"></button>
           </div>
-          <button type="button" class="btn" id="brandSave">保存</button>
+          <button type="button" class="btn" id="brandSave" data-i18n="save">保存</button>
         </div>
       </section>
 
       <section id="tab-staff" class="hidden" hidden>
         <div class="card card-pad">
-          <h3>坐席账号</h3>
-          <p class="hint" style="margin:8px 0 16px">超管用环境密码登录；坐席用这里的账号进工作台接待。</p>
+          <h3 data-i18n="staff.title">坐席账号</h3>
+          <p class="hint" style="margin:8px 0 16px" data-i18n="staff.hint">超管用环境密码登录；坐席用这里的账号进工作台接待。</p>
           <div class="toolbar" style="flex-wrap:wrap;gap:8px">
-            <input id="staffLogin" placeholder="登录名" maxlength="32" style="width:120px">
-            <input id="staffName" placeholder="显示名" maxlength="32" style="width:120px">
-            <input id="staffPass" placeholder="密码至少4位" maxlength="64" style="width:120px">
-            <select id="staffRole"><option value="agent">坐席</option><option value="admin">管理员</option></select>
+            <input id="staffLogin" placeholder="登录名" data-i18n-ph="staff.login" maxlength="32" style="width:120px">
+            <input id="staffName" placeholder="显示名" data-i18n-ph="staff.name" maxlength="32" style="width:120px">
+            <input id="staffPass" placeholder="密码至少4位" data-i18n-ph="staff.pass" maxlength="64" style="width:120px">
+            <select id="staffRole"><option value="agent" data-i18n="staff.agent">坐席</option><option value="admin" data-i18n="staff.admin">管理员</option></select>
             <input id="staffMax" type="number" value="8" min="1" max="50" title="接待上限" style="width:72px">
-            <button class="btn" type="button" id="staffAdd">添加</button>
+            <button class="btn" type="button" id="staffAdd" data-i18n="staff.add">添加</button>
           </div>
-          <div class="table-wrap"><table><thead><tr><th>登录名</th><th>姓名</th><th>角色</th><th>技能组</th><th>上限</th><th>状态</th><th></th></tr></thead><tbody id="staffBody"></tbody></table></div>
+          <div class="table-wrap"><table><thead><tr><th data-i18n="th.login">登录名</th><th data-i18n="th.name">姓名</th><th data-i18n="th.role">角色</th><th data-i18n="th.group">技能组</th><th data-i18n="th.max">上限</th><th data-i18n="th.status">状态</th><th></th></tr></thead><tbody id="staffBody"></tbody></table></div>
         </div>
       </section>
 
       <section id="tab-brands" class="hidden" hidden>
         <div class="card appear">
-          <h3>客服通道</h3>
-          <p class="hint" style="margin:8px 0 16px">改访客看到的名字、头像、欢迎语和客户头像。问题和答案在「快捷回复」。</p>
+          <h3 data-i18n="brand.title">客服通道</h3>
+          <p class="hint" style="margin:8px 0 16px" data-i18n="brand.hint">改访客看到的名字、头像、欢迎语和客户头像。问题和答案在「快捷回复」。</p>
           <div class="appear-block">
             <div class="appear-preview" id="visitorPreview">美</div>
             <div>
               <div class="appear-actions">
-                <button type="button" class="btn" id="visitorLogoPick">上传机器人头像</button>
-                <button type="button" class="btn-quiet" id="visitorLogoClear">恢复默认</button>
+                <button type="button" class="btn" id="visitorLogoPick" data-i18n="brand.logo">上传机器人头像</button>
+                <button type="button" class="btn-quiet" id="visitorLogoClear" data-i18n="brand.reset">恢复默认</button>
               </div>
-              <p class="hint" style="margin-top:8px;font-size:13px;color:var(--ink-muted)">聊天页左上角圆形头像，正方形 JPG / PNG / WebP，不超过 1MB</p>
+              <p class="hint" style="margin-top:8px;font-size:13px;color:var(--ink-muted)" data-i18n="brand.logo_hint">聊天页左上角圆形头像，正方形 JPG / PNG / WebP，不超过 1MB</p>
               <input type="file" id="visitorLogoFile" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
             </div>
           </div>
-          <label for="visitorName">机器人名称</label>
-          <input class="field" id="visitorName" maxlength="32" placeholder="客服小美">
-          <label>欢迎语（可用 {name}）</label>
-          <input class="field" id="brandWelcome" maxlength="200" placeholder="你好，我是{name}，有问题直接发给我就好。">
-          <label>转人工关键词（逗号分隔）</label>
+          <label for="visitorName" data-i18n="brand.name">机器人名称</label>
+          <input class="field" id="visitorName" maxlength="32" placeholder="客服小美" data-i18n-ph="brand.name_ph">
+          <label data-i18n="brand.welcome">欢迎语（可用 {name}）</label>
+          <input class="field" id="brandWelcome" maxlength="200" placeholder="你好，我是{name}，有问题直接发给我就好。" data-i18n-ph="brand.welcome_ph">
+          <label data-i18n="brand.handoff">转人工关键词（逗号分隔）</label>
           <input class="field" id="brandHandoff" maxlength="120">
-          <label>客户头像图库</label>
-          <p class="hint">上传 10 张以上，每个访客随机抽一张并记住。同一人刷新不变。最多 24 张。</p>
+          <label data-i18n="brand.avatars">客户头像图库</label>
+          <p class="hint" data-i18n="brand.avatars_hint">上传 10 张以上，每个访客随机抽一张并记住。同一人刷新不变。最多 24 张。</p>
           <div class="appear-actions" style="margin:10px 0">
-            <button type="button" class="btn" id="visitorAvPick">上传客户头像</button>
+            <button type="button" class="btn" id="visitorAvPick" data-i18n="brand.av_up">上传客户头像</button>
             <span class="hint" id="visitorAvCount"></span>
           </div>
           <input type="file" id="visitorAvFile" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
           <div class="avatar-pool" id="visitorAvPool"></div>
-          <div class="appear-row"><div>允许发图</div><button type="button" class="switch on" id="capImg" role="switch"></button></div>
-          <div class="appear-row"><div>允许文件</div><button type="button" class="switch on" id="capFile" role="switch"></button></div>
-          <div class="appear-row"><div>允许语音</div><button type="button" class="switch on" id="capVoice" role="switch"></button></div>
-          <button type="button" class="btn" id="brandCfgSave">保存</button>
+          <div class="appear-row"><div data-i18n="brand.img">允许发图</div><button type="button" class="switch on" id="capImg" role="switch"></button></div>
+          <div class="appear-row"><div data-i18n="brand.file">允许文件</div><button type="button" class="switch on" id="capFile" role="switch"></button></div>
+          <div class="appear-row"><div data-i18n="brand.voice">允许语音</div><button type="button" class="switch on" id="capVoice" role="switch"></button></div>
+          <button type="button" class="btn" id="brandCfgSave" data-i18n="save">保存</button>
         </div>
       </section>
 
       <section id="tab-routing" class="hidden" hidden>
         <div class="card appear">
-          <h3>分配与上下班</h3>
-          <label>分配方式</label>
+          <h3 data-i18n="route.title">分配与上下班</h3>
+          <label data-i18n="route.mode">分配方式</label>
           <select class="field" id="routeMode">
-            <option value="least_busy">饱和度（人少优先）</option>
-            <option value="round_robin">轮询</option>
+            <option value="least_busy" data-i18n="route.least">饱和度（人少优先）</option>
+            <option value="round_robin" data-i18n="route.rr">轮询</option>
           </select>
-          <div class="appear-row"><div>熟客跟进（优先上次坐席）</div><button type="button" class="switch on" id="routeSticky" role="switch"></button></div>
-          <div class="appear-row"><div>启用上下班</div><button type="button" class="switch" id="hoursOn" role="switch"></button></div>
+          <div class="appear-row"><div data-i18n="route.sticky">熟客跟进（优先上次坐席）</div><button type="button" class="switch on" id="routeSticky" role="switch"></button></div>
+          <div class="appear-row"><div data-i18n="route.hours">启用上下班</div><button type="button" class="switch" id="hoursOn" role="switch"></button></div>
           <div class="toolbar">
             <input class="field" id="hoursStart" value="09:00" style="width:100px">
-            <span>至</span>
+            <span data-i18n="route.to">至</span>
             <input class="field" id="hoursEnd" value="18:00" style="width:100px">
           </div>
-          <p class="hint">下班后转人工进入排队，不自动分配。</p>
-          <h3 style="margin-top:20px">技能组</h3>
+          <p class="hint" data-i18n="route.hours_hint">下班后转人工进入排队，不自动分配。</p>
+          <h3 style="margin-top:20px" data-i18n="route.groups">技能组</h3>
           <div class="toolbar">
-            <input id="groupName" placeholder="组名" maxlength="32">
-            <button class="btn" type="button" id="groupAdd">添加组</button>
+            <input id="groupName" placeholder="组名" data-i18n-ph="route.gname" maxlength="32">
+            <button class="btn" type="button" id="groupAdd" data-i18n="route.gadd">添加组</button>
           </div>
           <div id="groupList"></div>
-          <button type="button" class="btn" id="routeSave" style="margin-top:16px">保存路由</button>
+          <button type="button" class="btn" id="routeSave" style="margin-top:16px" data-i18n="route.save">保存路由</button>
         </div>
       </section>
 
       <section id="tab-canned" class="hidden" hidden>
         <div class="card appear">
-          <h3>问题和答案</h3>
-          <p class="hint" style="margin:8px 0 16px">问题会出现在聊天页欢迎语下面。客户点了，就自动回这条答案，不再问 AI。坐席工作台也能点着用。</p>
-          <label for="canTitle">问题</label>
+          <h3 data-i18n="can.title">问题和答案</h3>
+          <p class="hint" style="margin:8px 0 16px" data-i18n="can.hint">问题会出现在聊天页欢迎语下面。客户点了，就自动回这条答案，不再问 AI。坐席工作台也能点着用。</p>
+          <label for="canTitle" data-i18n="can.q">问题</label>
           <input class="field" id="canTitle" maxlength="40" placeholder="怎么收费？">
-          <label for="canBody">答案</label>
+          <label for="canBody" data-i18n="can.a">答案</label>
           <textarea class="field" id="canBody" maxlength="400" rows="4" placeholder="客户点这个问题时，直接回复这句话"></textarea>
-          <button type="button" class="btn" id="canAdd">添加</button>
+          <button type="button" class="btn" id="canAdd" data-i18n="can.add">添加</button>
           <div id="canList"></div>
         </div>
       </section>
 
       <section id="tab-reports" class="hidden" hidden>
         <div class="card card-pad">
-          <h3>满意度</h3>
-          <p id="csatBox">加载中…</p>
-          <h3 style="margin-top:20px">按坐席</h3>
-          <div class="table-wrap"><table><thead><tr><th>坐席</th><th>状态</th><th>历史接待</th><th>当前会话</th><th>回复数</th></tr></thead><tbody id="reportBody"></tbody></table></div>
+          <h3 data-i18n="rep.csat">满意度</h3>
+          <p id="csatBox" data-i18n="loading">加载中…</p>
+          <h3 style="margin-top:20px" data-i18n="rep.by">按坐席</h3>
+          <div class="table-wrap"><table><thead><tr><th data-i18n="th.agent">坐席</th><th data-i18n="th.status">状态</th><th data-i18n="th.hist">历史接待</th><th data-i18n="th.open">当前会话</th><th data-i18n="th.replies">回复数</th></tr></thead><tbody id="reportBody"></tbody></table></div>
         </div>
       </section>
     </main>
@@ -889,7 +900,7 @@ html.admin-night .card.loading::after{background:rgba(42,48,60,.8)}
         <img src="/assets/admin/tab-gear.svg" alt="">
       </button>
     </div>
-    <button class="aside-close" id="asideClose" type="button" aria-label="关闭面板">
+    <button class="aside-close" id="asideClose" type="button" aria-label="关闭面板" data-i18n-aria="close_aside">
       <img src="/assets/admin/close.png" alt="">
     </button>
   </div>
@@ -897,7 +908,7 @@ html.admin-night .card.loading::after{background:rgba(42,48,60,.8)}
     <div id="aside-activity"></div>
     <div id="aside-chats" class="hidden" hidden></div>
     <div id="aside-settings" class="hidden aside-set" hidden>
-      <p>主题色只作用于本机后台，不影响聊天页。</p>
+      <p data-i18n="aside.theme">主题色只作用于本机后台，不影响聊天页。</p>
       <div class="theme-pick" id="themePick">
         <button type="button" data-theme="indigo" style="background:#5856d6" title="靛蓝"></button>
         <button type="button" data-theme="blue" style="background:#3399ff" title="蓝"></button>
@@ -908,8 +919,8 @@ html.admin-night .card.loading::after{background:rgba(42,48,60,.8)}
         <button type="button" data-theme="dark" style="background:#212631" title="深色"></button>
       </div>
       <div class="stack">
-        <button type="button" class="btn" data-jump="appearance">外观设置</button>
-        <button type="button" class="btn-quiet" data-jump="dashboard">运营看板</button>
+        <button type="button" class="btn" data-jump="appearance" data-i18n="tab.appearance">外观设置</button>
+        <button type="button" class="btn-quiet" data-jump="dashboard" data-i18n="tab.dashboard">运营看板</button>
       </div>
     </div>
   </div>
@@ -924,10 +935,216 @@ const $ = s => document.querySelector(s);
 const LIMIT = 50;
 let page = 1, vpage = 1, currentTab = 'dashboard', filterVisitor = '';
 let toastTimer = 0;
-const TITLES = {
-  messages: '会话记录', visitors: '访客列表', dashboard: '运营看板', appearance: '外观设置',
-  staff: '客服管理', brands: '客服通道', routing: '路由与排班', canned: '快捷回复', reports: '坐席报表'
+const I18N = {
+  zh: {
+    'doc.title': '运营中台', 'login.title': '运营中台',
+    'login.lead': '客服平台 · 会话 24 小时有效。坐席请走', 'login.desk': '工作台',
+    'login.user': '登录名（超管可空）', 'login.pw': '密码', 'login.submit': '登录',
+    'login.busy': '尝试过于频繁，请稍后再试', 'login.noconfig': '后台未配置密码，无法登录',
+    'login.bad': '密码错误', 'login.net': '网络不可用，请稍后重试',
+    'nav.ops': '运营', 'nav.settings': '设置', 'nav.desk': '坐席工作台 →', 'nav.logout': '退出登录',
+    'tab.dashboard': '运营看板', 'tab.messages': '会话记录', 'tab.visitors': '访客列表',
+    'tab.appearance': '外观设置', 'tab.brands': '客服通道', 'tab.staff': '客服管理',
+    'tab.routing': '路由与排班', 'tab.canned': '快捷回复', 'tab.reports': '坐席报表',
+    'crumb.home': '家', 'search': '搜索', 'lang.title': '界面语言',
+    'lang.sub': '只改本机后台界面，不影响访客聊天页',
+    'notify.title': '客户新消息', 'notify.sub': 'H5 聊天页里客户刚发来的话',
+    'notify.foot': '查看会话记录', 'mail.title': '最近会话', 'mail.sub': '按访客最近一次开口排序',
+    'mail.foot': '查看访客列表', 'apps.title': '快捷入口', 'apps.chat': '打开聊天页',
+    'user.online_toggle': '切换在线状态', 'user.logout': '退出登录',
+    'user.state_on': '聊天页显示在线', 'user.state_off': '聊天页显示离线', 'user.state_24': '聊天页 AI 24 小时在线',
+    'bell': '客户新消息', 'list': '今日动态', 'mail': '最近会话', 'sun.dark': '切换深色后台', 'sun.light': '切换浅色后台',
+    'acct': '账号菜单', 'apps': '快捷入口', 'menu': '打开菜单', 'close_menu': '关闭菜单', 'close_aside': '关闭面板',
+    'skip': '跳到主内容', 'loading': '加载中…', 'load_fail': '加载失败',
+    'msg.kw': '关键词搜索', 'msg.search': '搜索', 'msg.visitor': '访客', 'msg.handoff': '转人工已在坐席工作台',
+    'msg.empty': '暂无消息', 'msg.empty_sub': '有客户对话后会出现在这里',
+    'msg.none': '没有匹配的消息', 'msg.none_vid': '试试换关键词，或清除访客筛选', 'msg.none_kw': '试试换一个关键词',
+    'th.dir': '方向', 'th.type': '类型', 'th.content': '内容', 'th.visitor': '访客', 'th.time': '时间',
+    'prev': '上一页', 'next': '下一页', 'page': '第 {n} 页',
+    'vis.empty': '暂无访客', 'vis.empty_sub': '客户打开聊天页后会出现在这里',
+    'th.vid': '访客 ID', 'th.first': '首次', 'th.last': '最近', 'th.count': '消息数',
+    'dash.14': '近 14 天对话', 'dash.sub': '来自 H5 聊天页的真实消息', 'dash.range': '最近 14 天',
+    'dash.kw': '高频关键词（客户消息）', 'dash.empty_chart': '近 14 天还没有对话', 'dash.no_kw': '暂无关键词',
+    'kpi.visitors': '累计访客', 'kpi.messages': '累计消息', 'kpi.reply': '回复率', 'kpi.sessions': '累计会话',
+    'kpi.replies': '{n} 条回复', 'kpi.today_sess': '今日 {n} 场',
+    'dash.subline': '累计 {msgs} 条消息 · {vis} 位访客 · 今日客户 {today} 条',
+    'tf.visitors': '累计访客', 'tf.today_visitors': '今日访客', 'tf.messages': '累计消息',
+    'tf.today_messages': '今日消息', 'tf.files': '图片/文件',
+    'tf.people': '{n} 位', 'tf.msgs': '{n} 条', 'tf.items': '{n} 个',
+    'social.cust': '客户消息', 'social.bot': '小美回复', 'social.files': '图片 / 文件',
+    'social.today_cust': '今日客户', 'social.today_msg': '今日消息', 'social.nontext': '非文本消息',
+    'vs.flat': '与昨日持平', 'vs.diff': '较昨日 {n}',
+    'who.customer': '客户', 'who.bot': '小美', 'type.text': '文本', 'type.image': '图片', 'type.file': '文件', 'type.voice': '语音',
+    'time.today': '今天', 'time.yesterday': '昨天',
+    'appear.title': '运营中台', 'appear.hint': '只改侧栏和顶栏的名字、头像，不影响访客聊天页。',
+    'appear.upload': '上传头像', 'appear.reset': '恢复默认', 'appear.file': '正方形 JPG / PNG / WebP，不超过 1MB',
+    'appear.name': '后台显示名称', 'appear.online': '在线状态',
+    'appear.online_hint': '离线时聊天页显示灰色圆点；客户仍可留言',
+    'appear.lock_hint': '已锁定：聊天页 24 小时显示在线（AI 值班）',
+    'appear.lock': '锁定 AI 一直在线', 'appear.bg': '对话区背景',
+    'appear.bg_hint': '消息区和底栏一起变色，顶栏不变。欢迎语、机器人头像和客户头像在「客服通道」。',
+    'save': '保存', 'saved': '已保存', 'save_fail': '保存失败', 'op_fail': '操作失败', 'upload_fail': '上传失败',
+    'add_fail': '添加失败', 'del_fail': '删除失败', 'appear.lock_p': '小美是 24 小时 AI。锁上后聊天页始终绿点，人工不在也不显示离线。',
+    'brand.welcome_ph': '你好，我是{name}，有问题直接发给我就好。', 'brand.name_ph': '客服小美',
+    'staff.title': '坐席账号', 'staff.hint': '超管用环境密码登录；坐席用这里的账号进工作台接待。',
+    'staff.login': '登录名', 'staff.name': '显示名', 'staff.pass': '密码至少4位', 'staff.agent': '坐席', 'staff.admin': '管理员',
+    'staff.add': '添加', 'th.login': '登录名', 'th.name': '姓名', 'th.role': '角色', 'th.group': '技能组', 'th.max': '上限', 'th.status': '状态',
+    'staff.empty': '还没有坐席。填登录名、显示名、至少 4 位密码，再点添加。',
+    'staff.off': '强制下线', 'staff.on': '上线', 'staff.del': '删除', 'staff.disabled': '停用',
+    'staff.confirm': '删除该坐席？', 'staff.need': '登录名、显示名必填，密码至少 4 位', 'staff.added': '已添加坐席',
+    'brand.title': '客服通道', 'brand.hint': '改访客看到的名字、头像、欢迎语和客户头像。问题和答案在「快捷回复」。',
+    'brand.logo': '上传机器人头像', 'brand.reset': '恢复默认',
+    'brand.logo_hint': '聊天页左上角圆形头像，正方形 JPG / PNG / WebP，不超过 1MB',
+    'brand.name': '机器人名称', 'brand.welcome': '欢迎语（可用 {name}）',
+    'brand.handoff': '转人工关键词（逗号分隔）', 'brand.avatars': '客户头像图库',
+    'brand.avatars_hint': '上传 10 张以上，每个访客随机抽一张并记住。同一人刷新不变。最多 24 张。',
+    'brand.av_up': '上传客户头像', 'brand.img': '允许发图', 'brand.file': '允许文件', 'brand.voice': '允许语音',
+    'brand.need_name': '请填写机器人名称', 'brand.no_id': '客服通道还没加载到，请刷新后再试',
+    'av.none': '还没有客户头像，上传后聊天页右侧才会显示图片。',
+    'route.title': '分配与上下班', 'route.mode': '分配方式', 'route.least': '饱和度（人少优先）', 'route.rr': '轮询',
+    'route.sticky': '熟客跟进（优先上次坐席）', 'route.hours': '启用上下班', 'route.to': '至',
+    'route.hours_hint': '下班后转人工进入排队，不自动分配。', 'route.groups': '技能组', 'route.gname': '组名', 'route.gadd': '添加组',
+    'route.save': '保存路由', 'route.saved': '路由已保存', 'route.need_g': '请填写组名',
+    'can.title': '问题和答案', 'can.hint': '问题会出现在聊天页欢迎语下面。客户点了，就自动回这条答案，不再问 AI。坐席工作台也能点着用。',
+    'can.q': '问题', 'can.a': '答案', 'can.add': '添加', 'can.empty': '还没有问题和答案。加上之后会出现在聊天页欢迎语下面。',
+    'can.need': '问题和答案都要填', 'can.added': '已添加，刷新聊天页就能点',
+    'rep.csat': '满意度', 'rep.by': '按坐席', 'th.agent': '坐席', 'th.hist': '历史接待', 'th.open': '当前会话', 'th.replies': '回复数',
+    'rep.line': '评价 {n} 条，平均 {avg} 分',
+    'aside.theme': '主题色只作用于本机后台，不影响聊天页。', 'aside.today': '今天', 'aside.earlier': '更早',
+    'aside.empty': '暂无动态', 'aside.fail': '动态加载失败', 'aside.no_vis': '暂无访客',
+    'aside.with': '与', 'aside.visitor': '访客', 'aside.n': '{n} 条',
+    'feed.in': '客户发来消息', 'feed.out': '小美已回复', 'feed.vis': '访客 {id}',
+    'feed.meta': '{t} · {n} 条消息', 'feed.no_notes': '今天还没有客户消息', 'feed.no_mail': '还没有访客打开过聊天页',
+    'toast.logo': '后台头像已更新', 'toast.logo_reset': '已恢复默认头像', 'toast.lock': '已锁定为 AI 一直在线，先关掉锁定再改',
+    'toast.lock24': '已锁定为 AI 24 小时在线', 'toast.chat_on': '聊天页已设为在线', 'toast.chat_off': '聊天页已设为离线',
+    'toast.bot_logo': '机器人头像已更新', 'toast.bot_reset': '已恢复默认机器人头像',
+    'toast.avs': '已上传 {n} 张客户头像', 'toast.del': '已删除',
+    'fail.messages': '会话记录加载失败', 'fail.visitors': '访客列表加载失败', 'fail.dash': '看板加载失败',
+    'fail.appear': '外观设置加载失败', 'old_api': '后台进程还是旧版，请重启服务后再试', 'req_fail': '请求失败 {n}',
+    'notify.aria': '客户新消息', 'dash.bar': '{date}：{msgs} 条消息，{vis} 位访客'
+  },
+  en: {
+    'doc.title': 'Ops console', 'login.title': 'Ops console',
+    'login.lead': 'Support platform · sessions last 24 hours. Agents use the', 'login.desk': 'desk',
+    'login.user': 'Login name (admin can leave empty)', 'login.pw': 'Password', 'login.submit': 'Sign in',
+    'login.busy': 'Too many attempts. Try again later.', 'login.noconfig': 'Admin password is not configured.',
+    'login.bad': 'Wrong password', 'login.net': 'Network error. Try again.',
+    'nav.ops': 'Ops', 'nav.settings': 'Settings', 'nav.desk': 'Agent desk →', 'nav.logout': 'Sign out',
+    'tab.dashboard': 'Dashboard', 'tab.messages': 'Conversations', 'tab.visitors': 'Visitors',
+    'tab.appearance': 'Appearance', 'tab.brands': 'Chat channel', 'tab.staff': 'Agents',
+    'tab.routing': 'Routing', 'tab.canned': 'Quick replies', 'tab.reports': 'Agent reports',
+    'crumb.home': 'Home', 'search': 'Search', 'lang.title': 'Language',
+    'lang.sub': 'This device only. Visitor chat stays as-is.',
+    'notify.title': 'New customer messages', 'notify.sub': 'Latest messages from the chat page',
+    'notify.foot': 'Open conversations', 'mail.title': 'Recent chats', 'mail.sub': 'Sorted by last visitor message',
+    'mail.foot': 'Open visitors', 'apps.title': 'Shortcuts', 'apps.chat': 'Open chat page',
+    'user.online_toggle': 'Toggle online status', 'user.logout': 'Sign out',
+    'user.state_on': 'Chat page shows online', 'user.state_off': 'Chat page shows offline', 'user.state_24': 'Chat page AI online 24h',
+    'bell': 'New customer messages', 'list': "Today's activity", 'mail': 'Recent chats', 'sun.dark': 'Dark mode', 'sun.light': 'Light mode',
+    'acct': 'Account', 'apps': 'Shortcuts', 'menu': 'Open menu', 'close_menu': 'Close menu', 'close_aside': 'Close panel',
+    'skip': 'Skip to content', 'loading': 'Loading…', 'load_fail': 'Failed to load',
+    'msg.kw': 'Search messages', 'msg.search': 'Search', 'msg.visitor': 'Visitor', 'msg.handoff': 'Live handoff is on the agent desk',
+    'msg.empty': 'No messages', 'msg.empty_sub': 'They appear here after a visitor chats',
+    'msg.none': 'No matching messages', 'msg.none_vid': 'Try another keyword, or clear the visitor filter', 'msg.none_kw': 'Try another keyword',
+    'th.dir': 'From', 'th.type': 'Type', 'th.content': 'Content', 'th.visitor': 'Visitor', 'th.time': 'Time',
+    'prev': 'Prev', 'next': 'Next', 'page': 'Page {n}',
+    'vis.empty': 'No visitors', 'vis.empty_sub': 'They appear here after someone opens chat',
+    'th.vid': 'Visitor ID', 'th.first': 'First seen', 'th.last': 'Last seen', 'th.count': 'Messages',
+    'dash.14': 'Last 14 days', 'dash.sub': 'Real messages from the chat page', 'dash.range': 'Last 14 days',
+    'dash.kw': 'Top keywords (customer)', 'dash.empty_chart': 'No chats in the last 14 days', 'dash.no_kw': 'No keywords yet',
+    'kpi.visitors': 'Visitors', 'kpi.messages': 'Messages', 'kpi.reply': 'Reply rate', 'kpi.sessions': 'Sessions',
+    'kpi.replies': '{n} replies', 'kpi.today_sess': '{n} today',
+    'dash.subline': '{msgs} messages · {vis} visitors · {today} customer today',
+    'tf.visitors': 'Visitors', 'tf.today_visitors': 'Visitors today', 'tf.messages': 'Messages',
+    'tf.today_messages': 'Messages today', 'tf.files': 'Images / files',
+    'tf.people': '{n}', 'tf.msgs': '{n}', 'tf.items': '{n}',
+    'social.cust': 'Customer', 'social.bot': 'Replies', 'social.files': 'Images / files',
+    'social.today_cust': 'Customer today', 'social.today_msg': 'Today', 'social.nontext': 'Non-text',
+    'vs.flat': 'Same as yesterday', 'vs.diff': '{n} vs yesterday',
+    'who.customer': 'Customer', 'who.bot': 'Bot', 'type.text': 'Text', 'type.image': 'Image', 'type.file': 'File', 'type.voice': 'Voice',
+    'time.today': 'Today', 'time.yesterday': 'Yesterday',
+    'appear.title': 'Ops console', 'appear.hint': 'Name and avatar for this console only. Visitor chat is unchanged.',
+    'appear.upload': 'Upload avatar', 'appear.reset': 'Reset', 'appear.file': 'Square JPG / PNG / WebP, max 1MB',
+    'appear.name': 'Display name', 'appear.online': 'Online status',
+    'appear.online_hint': 'Offline shows a grey dot. Visitors can still leave a message.',
+    'appear.lock_hint': 'Locked: chat page stays online 24 hours (AI on duty)',
+    'appear.lock': 'Keep AI online', 'appear.bg': 'Chat background',
+    'appear.bg_hint': 'Colors the message area. Welcome text and avatars are in Chat channel.',
+    'save': 'Save', 'saved': 'Saved', 'save_fail': 'Save failed', 'op_fail': 'Action failed', 'upload_fail': 'Upload failed',
+    'add_fail': 'Failed to add', 'del_fail': 'Failed to delete', 'appear.lock_p': 'Xiaomei is 24/7 AI. When locked, chat stays green even if no human is on duty.',
+    'brand.welcome_ph': 'Hi, I am {name}. Send me a message anytime.', 'brand.name_ph': 'Xiaomei',
+    'staff.title': 'Agent accounts', 'staff.hint': 'Admins use the env password. Agents sign in here to take chats.',
+    'staff.login': 'Login', 'staff.name': 'Name', 'staff.pass': 'Password (min 4)', 'staff.agent': 'Agent', 'staff.admin': 'Admin',
+    'staff.add': 'Add', 'th.login': 'Login', 'th.name': 'Name', 'th.role': 'Role', 'th.group': 'Skill group', 'th.max': 'Cap', 'th.status': 'Status',
+    'staff.empty': 'No agents yet. Fill login, name, and a password of at least 4 characters.',
+    'staff.off': 'Force offline', 'staff.on': 'Online', 'staff.del': 'Delete', 'staff.disabled': 'disabled',
+    'staff.confirm': 'Delete this agent?', 'staff.need': 'Login, name, and a 4+ character password are required', 'staff.added': 'Agent added',
+    'brand.title': 'Chat channel', 'brand.hint': 'Visitor-facing name, avatar, welcome, and visitor avatars. Q&A is in Quick replies.',
+    'brand.logo': 'Upload bot avatar', 'brand.reset': 'Reset',
+    'brand.logo_hint': 'Round avatar on the chat page. Square JPG / PNG / WebP, max 1MB',
+    'brand.name': 'Bot name', 'brand.welcome': 'Welcome (use {name} if you want)',
+    'brand.handoff': 'Handoff keywords (comma separated)', 'brand.avatars': 'Visitor avatars',
+    'brand.avatars_hint': 'Upload 10+. Each visitor gets one at random and keeps it. Max 24.',
+    'brand.av_up': 'Upload visitor avatars', 'brand.img': 'Allow images', 'brand.file': 'Allow files', 'brand.voice': 'Allow voice',
+    'brand.need_name': 'Bot name is required', 'brand.no_id': 'Channel is not loaded. Refresh and try again.',
+    'av.none': 'No visitor avatars yet. Upload some to show them on the chat page.',
+    'route.title': 'Assignment & hours', 'route.mode': 'Assignment', 'route.least': 'Least busy', 'route.rr': 'Round robin',
+    'route.sticky': 'Sticky agent (prefer last agent)', 'route.hours': 'Business hours', 'route.to': 'to',
+    'route.hours_hint': 'After hours, live handoff queues and is not auto-assigned.', 'route.groups': 'Skill groups', 'route.gname': 'Group name', 'route.gadd': 'Add group',
+    'route.save': 'Save routing', 'route.saved': 'Routing saved', 'route.need_g': 'Group name is required',
+    'can.title': 'Questions and answers', 'can.hint': 'Questions show under the welcome. Tapping one sends this answer, without calling the AI. Agents can use them too.',
+    'can.q': 'Question', 'can.a': 'Answer', 'can.add': 'Add', 'can.empty': 'No Q&A yet. They will show under the welcome on the chat page.',
+    'can.need': 'Question and answer are both required', 'can.added': 'Added. Refresh the chat page to use it.',
+    'rep.csat': 'CSAT', 'rep.by': 'By agent', 'th.agent': 'Agent', 'th.hist': 'Handled', 'th.open': 'Open', 'th.replies': 'Replies',
+    'rep.line': '{n} ratings, average {avg}',
+    'aside.theme': 'Theme color is local to this console.', 'aside.today': 'Today', 'aside.earlier': 'Earlier',
+    'aside.empty': 'No activity', 'aside.fail': 'Failed to load activity', 'aside.no_vis': 'No visitors',
+    'aside.with': 'With', 'aside.visitor': 'Visitor', 'aside.n': '{n}',
+    'feed.in': 'Customer message', 'feed.out': 'Bot reply', 'feed.vis': 'Visitor {id}',
+    'feed.meta': '{t} · {n} messages', 'feed.no_notes': 'No customer messages today', 'feed.no_mail': 'No visitors yet',
+    'toast.logo': 'Console avatar updated', 'toast.logo_reset': 'Default avatar restored', 'toast.lock': 'Locked to AI online. Turn off the lock first.',
+    'toast.lock24': 'Locked to AI online 24 hours', 'toast.chat_on': 'Chat page set online', 'toast.chat_off': 'Chat page set offline',
+    'toast.bot_logo': 'Bot avatar updated', 'toast.bot_reset': 'Default bot avatar restored',
+    'toast.avs': 'Uploaded {n} visitor avatars', 'toast.del': 'Deleted',
+    'fail.messages': 'Failed to load conversations', 'fail.visitors': 'Failed to load visitors', 'fail.dash': 'Failed to load dashboard',
+    'fail.appear': 'Failed to load appearance', 'old_api': 'Server is on an old build. Restart it and retry.', 'req_fail': 'Request failed {n}',
+    'notify.aria': 'New customer messages', 'dash.bar': '{date}: {msgs} messages, {vis} visitors'
+  }
 };
+let uiLang = 'zh';
+try { if (localStorage.getItem('xiaomei_admin_lang') === 'en') uiLang = 'en'; } catch (e) {}
+function t(key, vars) {
+  let s = (I18N[uiLang] && I18N[uiLang][key]) || I18N.zh[key] || key;
+  if (vars) Object.keys(vars).forEach(k => { s = String(s).split('{' + k + '}').join(vars[k]); });
+  return s;
+}
+function applyUiLang() {
+  document.documentElement.lang = uiLang === 'en' ? 'en' : 'zh-CN';
+  document.title = t('doc.title');
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+  document.querySelectorAll('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
+  document.querySelectorAll('.lang-row').forEach(b => b.classList.toggle('on', b.dataset.lang === uiLang));
+  const night = document.documentElement.classList.contains('admin-night');
+  const sun = document.getElementById('btnSun');
+  if (sun) sun.setAttribute('aria-label', night ? t('sun.light') : t('sun.dark'));
+  if (document.getElementById('pageTitle')) {
+    document.getElementById('pageTitle').textContent = t('tab.' + currentTab);
+    document.getElementById('crumbNow').textContent = t('tab.' + currentTab);
+  }
+  if (window._cfg) paintAppearance(window._cfg, window._ops);
+}
+function setUiLang(next) {
+  uiLang = next === 'en' ? 'en' : 'zh';
+  try { localStorage.setItem('xiaomei_admin_lang', uiLang); } catch (e) {}
+  applyUiLang();
+  closeDrops();
+  if (document.getElementById('app') && !document.getElementById('app').classList.contains('hidden')) {
+    loadForTab(currentTab);
+    loadHeaderFeeds();
+  }
+}
+const TITLES = new Proxy({}, { get: (_, k) => t('tab.' + k) });
 const THEMES = {
   indigo: ['#321fdb', '#2b1bc0'],
   blue: ['#3399ff', '#1f7fd8'],
@@ -963,9 +1180,9 @@ function fmtTime(s) {
   const now = new Date();
   const p = n => String(n).padStart(2, '0');
   const hm = p(d.getHours()) + ':' + p(d.getMinutes());
-  if (d.toDateString() === now.toDateString()) return '今天 ' + hm;
+  if (d.toDateString() === now.toDateString()) return t('time.today') + ' ' + hm;
   const y = new Date(now); y.setDate(now.getDate() - 1);
-  if (d.toDateString() === y.toDateString()) return '昨天 ' + hm;
+  if (d.toDateString() === y.toDateString()) return t('time.yesterday') + ' ' + hm;
   const md = p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + hm;
   return d.getFullYear() === now.getFullYear() ? md : d.getFullYear() + '-' + md;
 }
@@ -986,16 +1203,19 @@ function vidBtn(id) {
   return `<button type="button" class="vid" data-vid="${esc(s)}" title="${esc(s)}">${esc(shortId(s))}</button>`;
 }
 
-const TYPE_LABEL = { text: '文本', image: '图片', file: '文件', voice: '语音', record: '语音' };
-function typeLabel(t) { return TYPE_LABEL[t] || t || '—'; }
+function typeLabel(kind) {
+  const key = kind === 'record' ? 'voice' : kind;
+  const map = { text: 'type.text', image: 'type.image', file: 'type.file', voice: 'type.voice' };
+  return map[key] ? t(map[key]) : (kind || '—');
+}
 function isMobile() { return window.matchMedia('(max-width: 768px)').matches; }
 
 function apiErr(data, status) {
   const d = data && data.detail;
   if (typeof d === 'string') return d;
   if (Array.isArray(d) && d[0] && (d[0].msg || d[0].message)) return d[0].msg || d[0].message;
-  if (status === 404) return '后台进程还是旧版，请重启服务后再试';
-  return (data && data.error) || ('请求失败 ' + status);
+  if (status === 404) return t('old_api');
+  return (data && data.error) || t('req_fail', { n: status });
 }
 
 const api = async (path) => {
@@ -1010,7 +1230,7 @@ function showLogin() {
   $('#login').classList.remove('hidden');
   $('#app').classList.add('hidden');
   $('#loginBtn').disabled = false;
-  $('#loginBtn').textContent = '登录';
+  $('#loginBtn').textContent = t('login.submit');
 }
 
 function closeDrawer() {
@@ -1048,7 +1268,7 @@ function toggleDrop(id, btn) {
 function applyNight(on) {
   document.documentElement.classList.toggle('admin-night', on);
   try { localStorage.setItem('xiaomei_admin_night', on ? '1' : '0'); } catch (e) {}
-  $('#btnSun').setAttribute('aria-label', on ? '切换浅色后台' : '切换深色后台');
+  $('#btnSun').setAttribute('aria-label', on ? t('sun.light') : t('sun.dark'));
 }
 try { applyNight(localStorage.getItem('xiaomei_admin_night') === '1'); } catch (e) { applyNight(false); }
 
@@ -1057,8 +1277,8 @@ function notifyRow(m) {
   const body = String(m.content || '').replace(/\s+/g, ' ').slice(0, 48);
   return `<button type="button" class="note-row" data-vid="${esc(m.visitor_id)}">` +
     `<i class="note-dot ${inbound ? 'red' : 'blue'}"></i><span>` +
-    `<b>${inbound ? '客户发来消息' : '小美已回复'}</b>` +
-    `<small>访客 ${esc(shortId(m.visitor_id))} · ${esc(fmtTime(m.created_at))}</small>` +
+    `<b>${inbound ? t('feed.in') : t('feed.out')}</b>` +
+    `<small>${t('feed.vis', { id: esc(shortId(m.visitor_id)) })} · ${esc(fmtTime(m.created_at))}</small>` +
     (body ? `<em>${esc(body)}</em>` : '') +
     `</span></button>`;
 }
@@ -1068,8 +1288,8 @@ function mailRow(v) {
   const ch = String(v.visitor_id || '?').slice(0, 1).toUpperCase();
   return `<button type="button" class="mail-row" data-vid="${esc(v.visitor_id)}">` +
     `<span class="mail-av">${esc(ch)}</span><span>` +
-    `<b>访客 ${esc(shortId(v.visitor_id))}</b>` +
-    `<small>${esc(fmtTime(v.last_seen))} · ${n} 条消息</small>` +
+    `<b>${t('feed.vis', { id: esc(shortId(v.visitor_id)) })}</b>` +
+    `<small>${t('feed.meta', { t: esc(fmtTime(v.last_seen)), n: n })}</small>` +
     `</span></button>`;
 }
 
@@ -1083,14 +1303,14 @@ async function loadHeaderFeeds() {
     const notes = customers.length ? customers : (msg.data || []);
     $('#dropNotifyBody').innerHTML = notes.length
       ? notes.map(notifyRow).join('')
-      : '<div class="drop-empty">今天还没有客户消息</div>';
+      : `<div class="drop-empty">${t('feed.no_notes')}</div>`;
     const visitors = vis.data || [];
     $('#dropMailBody').innerHTML = visitors.length
       ? visitors.map(mailRow).join('')
-      : '<div class="drop-empty">还没有访客打开过聊天页</div>';
+      : `<div class="drop-empty">${t('feed.no_mail')}</div>`;
   } catch (e) {
     if (e.message === 'unauth') return;
-    $('#dropNotifyBody').innerHTML = '<div class="drop-empty">加载失败</div>';
+    $('#dropNotifyBody').innerHTML = `<div class="drop-empty">${t('load_fail')}</div>`;
   }
 }
 
@@ -1148,10 +1368,11 @@ async function afterLogin() {
   try {
     const me = await api('me');
     if (me.role === 'agent') { location.href = '/desk'; return; }
-    if ($('#dropUserName')) $('#dropUserName').innerHTML = esc(me.name || '超管') + '<small>运营中台</small>';
+    if ($('#dropUserName')) $('#dropUserName').innerHTML = esc(me.name || t('staff.admin')) + '<small id="dropUserState">' + t('doc.title') + '</small>';
   } catch (e) {}
   $('#app').classList.remove('hidden');
   $('#login').classList.add('hidden');
+  applyUiLang();
   loadAppearance();
   loadForTab(currentTab);
   startPoll();
@@ -1175,7 +1396,7 @@ $('#loginForm').addEventListener('submit', async e => {
   const btn = $('#loginBtn');
   if (btn.disabled) return;
   btn.disabled = true;
-  btn.textContent = '登录中…';
+  btn.textContent = t('login.submit') + '…';
   $('#err').textContent = '';
   try {
     const r = await fetch('/admin/login', {
@@ -1185,12 +1406,12 @@ $('#loginForm').addEventListener('submit', async e => {
       body: JSON.stringify({ username: ($('#loginUser') && $('#loginUser').value.trim()) || '', password: $('#pw').value }),
     });
     if (r.ok) afterLogin();
-    else $('#err').textContent = r.status === 429 ? '尝试过于频繁，请稍后再试' : (r.status === 503 ? '后台未配置密码，无法登录' : '密码错误');
+    else $('#err').textContent = r.status === 429 ? t('login.busy') : (r.status === 503 ? t('login.noconfig') : t('login.bad'));
   } catch (err) {
-    $('#err').textContent = '网络不可用，请稍后重试';
+    $('#err').textContent = t('login.net');
   } finally {
     btn.disabled = false;
-    btn.textContent = '登录';
+    btn.textContent = t('login.submit');
   }
 });
 
@@ -1204,40 +1425,40 @@ async function doLogout() {
 $('#logoutBtn').onclick = doLogout;
 $('#dropLogout').onclick = doLogout;
 
-function switchTab(t) {
-  currentTab = t;
+function switchTab(tab) {
+  currentTab = tab;
   document.querySelectorAll('.nav button').forEach(b => {
-    const on = b.dataset.tab === t;
+    const on = b.dataset.tab === tab;
     b.classList.toggle('active', on);
     if (on) b.setAttribute('aria-current', 'page');
     else b.removeAttribute('aria-current');
   });
   document.querySelectorAll('section[id^=tab-]').forEach(s => {
-    const on = s.id === 'tab-' + t;
+    const on = s.id === 'tab-' + tab;
     s.classList.toggle('hidden', !on);
     s.toggleAttribute('hidden', !on);
   });
-  $('#pageTitle').textContent = TITLES[t];
-  $('#crumbNow').textContent = TITLES[t];
-  $('#pageTitle').classList.toggle('hidden', t === 'dashboard');
+  $('#pageTitle').textContent = TITLES[tab];
+  $('#crumbNow').textContent = TITLES[tab];
+  $('#pageTitle').classList.toggle('hidden', tab === 'dashboard');
   if (isMobile()) { closeDrawer(); closeAside(); closeDrops(); }
-  loadForTab(t);
+  loadForTab(tab);
 }
 document.querySelectorAll('.nav button').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
 
-async function loadForTab(t) {
+async function loadForTab(tab) {
   try {
-    if (t === 'messages') await loadMessages(page);
-    else if (t === 'visitors') await loadVisitors(vpage);
-    else if (t === 'dashboard') await loadDashboard();
-    else if (t === 'appearance') await loadAppearance();
-    else if (t === 'staff') await loadStaff();
-    else if (t === 'brands') await loadBrands();
-    else if (t === 'routing') await loadRouting();
-    else if (t === 'canned') await loadCanned();
-    else if (t === 'reports') await loadReports();
+    if (tab === 'messages') await loadMessages(page);
+    else if (tab === 'visitors') await loadVisitors(vpage);
+    else if (tab === 'dashboard') await loadDashboard();
+    else if (tab === 'appearance') await loadAppearance();
+    else if (tab === 'staff') await loadStaff();
+    else if (tab === 'brands') await loadBrands();
+    else if (tab === 'routing') await loadRouting();
+    else if (tab === 'canned') await loadCanned();
+    else if (tab === 'reports') await loadReports();
   } catch (e) {
-    if (e.message !== 'unauth') toast(e.message || '加载失败');
+    if (e.message !== 'unauth') toast(e.message || t('load_fail'));
   }
 }
 
@@ -1252,7 +1473,7 @@ function renderPager(pager, pageEl, countEl, prev, next, p, limit, total, load) 
   if (empty) return;
   const from = (p - 1) * limit + 1;
   const to = Math.min(p * limit, total);
-  pageEl.textContent = `第 ${p} 页`;
+  pageEl.textContent = t('page', { n: p });
   countEl.textContent = `${from}–${to} / ${total}`;
   prev.disabled = p <= 1;
   next.disabled = to >= total;
@@ -1279,12 +1500,12 @@ async function loadMessages(p) {
     if (empty) {
       const filtered = !!(kw || filterVisitor);
       $('#msgEmpty').innerHTML = filtered
-        ? `<p>没有匹配的消息</p><p class="sub">${filterVisitor ? '试试换关键词，或清除访客筛选' : '试试换一个关键词'}</p>`
-        : '<p>暂无消息</p><p class="sub">有客户对话后会出现在这里</p>';
+        ? `<p>${t('msg.none')}</p><p class="sub">${filterVisitor ? t('msg.none_vid') : t('msg.none_kw')}</p>`
+        : `<p>${t('msg.empty')}</p><p class="sub">${t('msg.empty_sub')}</p>`;
     } else {
       $('#msgBody').innerHTML = rows.map(m =>
         `<tr>` +
-        `<td class="keep"><span class="tag ${m.direction === 'customer' ? 'cust' : 'ai'}">${m.direction === 'customer' ? '客户' : '小美'}</span></td>` +
+        `<td class="keep"><span class="tag ${m.direction === 'customer' ? 'cust' : 'ai'}">${m.direction === 'customer' ? t('who.customer') : t('who.bot')}</span></td>` +
         `<td class="keep">${esc(typeLabel(m.msg_type))}</td>` +
         `<td><div class="cell-content" title="${esc(m.content)}">${esc(m.content)}</div></td>` +
         `<td class="keep">${vidBtn(m.visitor_id)}</td>` +
@@ -1294,7 +1515,7 @@ async function loadMessages(p) {
     renderPager($('#msgPager'), $('#msgPage'), $('#msgCount'), $('#msgPrev'), $('#msgNext'), page, LIMIT, total, loadMessages);
   } catch (e) {
     if (e.message === 'unauth') return;
-    toast('会话记录加载失败');
+    toast(t('fail.messages'));
   } finally {
     setBusy(card, false);
   }
@@ -1323,7 +1544,7 @@ async function loadVisitors(p) {
     renderPager($('#visPager'), $('#visPage'), $('#visCount'), $('#visPrev'), $('#visNext'), vpage, LIMIT, total, loadVisitors);
   } catch (e) {
     if (e.message === 'unauth') return;
-    toast('访客列表加载失败');
+    toast(t('fail.visitors'));
   } finally {
     setBusy(card, false);
   }
@@ -1355,8 +1576,8 @@ function sparkSvg(values) {
 function vsYesterday(today, yday) {
   const t = Number(today) || 0, y = Number(yday) || 0;
   const d = t - y;
-  if (d === 0) return { t: '与昨日持平', down: false };
-  return { t: '较昨日 ' + (d > 0 ? '+' : '') + d, down: d < 0 };
+  if (d === 0) return { t: t('vs.flat'), down: false };
+  return { t: t('vs.diff', { n: (d > 0 ? '+' : '') + d }), down: d < 0 };
 }
 
 function kpiCard(cls, num, hint, down, label, spark, jump) {
@@ -1380,11 +1601,11 @@ async function loadDashboard() {
     const dMsg = vsYesterday(today, s.yesterday_msgs);
     const reply = cust ? Math.round((ast / cust) * 1000) / 10 : 0;
     $('#statGrid').innerHTML =
-      kpiCard('kpi-users', fmtK(vis), dVis.t, dVis.down, '累计访客', sparkSvg(daily.map(d => d.visitors)), 'visitors') +
-      kpiCard('kpi-income', fmtK(msgs), dMsg.t, dMsg.down, '累计消息', sparkSvg(daily.map(d => d.msgs)), 'messages') +
-      kpiCard('kpi-conv', reply + '%', ast + ' 条回复', false, '回复率', sparkSvg(daily.map(d => d.customer)), 'messages') +
-      kpiCard('kpi-sess', fmtK(sess), '今日 ' + (s.today_sessions ?? 0) + ' 场', false, '累计会话', sparkSvg(daily.map(d => d.sessions ?? d.msgs)), 'messages');
-    $('#trafficSub').textContent = '累计 ' + msgs + ' 条消息 · ' + vis + ' 位访客 · 今日客户 ' + (s.today_customer ?? 0) + ' 条';
+      kpiCard('kpi-users', fmtK(vis), dVis.t, dVis.down, t('kpi.visitors'), sparkSvg(daily.map(d => d.visitors)), 'visitors') +
+      kpiCard('kpi-income', fmtK(msgs), dMsg.t, dMsg.down, t('kpi.messages'), sparkSvg(daily.map(d => d.msgs)), 'messages') +
+      kpiCard('kpi-conv', reply + '%', t('kpi.replies', { n: ast }), false, t('kpi.reply'), sparkSvg(daily.map(d => d.customer)), 'messages') +
+      kpiCard('kpi-sess', fmtK(sess), t('kpi.today_sess', { n: s.today_sessions ?? 0 }), false, t('kpi.sessions'), sparkSvg(daily.map(d => d.sessions ?? d.msgs)), 'messages');
+    $('#trafficSub').textContent = t('dash.subline', { msgs: msgs, vis: vis, today: s.today_customer ?? 0 });
     if (daily.length) {
       $('#trafficRange').textContent = daily[0].date.slice(5) + ' 至 ' + daily[daily.length - 1].date.slice(5);
       const maxDay = Math.max(...daily.map(d => d.msgs), 1);
@@ -1392,36 +1613,36 @@ async function loadDashboard() {
       $('#trafficChart').innerHTML = any
         ? daily.map(d => {
             const h = Math.max(4, Math.round((d.msgs / maxDay) * 100));
-            return `<button type="button" title="${esc(d.date)}：${d.msgs} 条消息，${d.visitors} 位访客"><i style="height:${h}%"></i><span>${esc(d.date.slice(5))}</span></button>`;
+            return `<button type="button" title="${esc(t('dash.bar', { date: d.date, msgs: d.msgs, vis: d.visitors }))}"><i style="height:${h}%"></i><span>${esc(d.date.slice(5))}</span></button>`;
           }).join('')
-        : '<div class="empty-chart">近 14 天还没有对话</div>';
+        : `<div class="empty-chart">${t('dash.empty_chart')}</div>`;
     }
     const max = Math.max(vis, msgs, 1);
     const bars = [
-      ['累计访客', vis + ' 位', 'g', vis / max],
-      ['今日访客', tv + ' 位', 'b', tv / max],
-      ['累计消息', msgs + ' 条', 'c', msgs / max],
-      ['今日消息', today + ' 条', 'r', today / max],
-      ['图片/文件', att + ' 个', 'p', att / max],
+      [t('tf.visitors'), t('tf.people', { n: vis }), 'g', vis / max],
+      [t('tf.today_visitors'), t('tf.people', { n: tv }), 'b', tv / max],
+      [t('tf.messages'), t('tf.msgs', { n: msgs }), 'c', msgs / max],
+      [t('tf.today_messages'), t('tf.msgs', { n: today }), 'r', today / max],
+      [t('tf.files'), t('tf.items', { n: att }), 'p', att / max],
     ];
     $('#trafficFoot').innerHTML = bars.map(b =>
       `<div class="tf"><div class="n">${esc(b[0])}</div><div class="d">${esc(b[1])}</div>` +
       `<div class="bar ${b[2]}"><b style="width:${Math.max(4, Math.round(b[3] * 100))}%"></b></div></div>`
     ).join('');
     $('#socialRow').innerHTML =
-      `<button type="button" class="social s0" data-jump="messages"><div class="social-top"><b>${fmtK(cust)}</b>客户消息</div><div class="social-bot"><span>今日客户</span><span>${s.today_customer ?? 0}</span></div></button>` +
-      `<button type="button" class="social s1" data-jump="messages"><div class="social-top"><b>${fmtK(ast)}</b>小美回复</div><div class="social-bot"><span>今日消息</span><span>${today}</span></div></button>` +
-      `<button type="button" class="social s2" data-jump="messages"><div class="social-top"><b>${fmtK(att)}</b>图片 / 文件</div><div class="social-bot"><span>非文本消息</span><span>${att}</span></div></button>`;
+      `<button type="button" class="social s0" data-jump="messages"><div class="social-top"><b>${fmtK(cust)}</b>${t('social.cust')}</div><div class="social-bot"><span>${t('social.today_cust')}</span><span>${s.today_customer ?? 0}</span></div></button>` +
+      `<button type="button" class="social s1" data-jump="messages"><div class="social-top"><b>${fmtK(ast)}</b>${t('social.bot')}</div><div class="social-bot"><span>${t('social.today_msg')}</span><span>${today}</span></div></button>` +
+      `<button type="button" class="social s2" data-jump="messages"><div class="social-top"><b>${fmtK(att)}</b>${t('social.files')}</div><div class="social-bot"><span>${t('social.nontext')}</span><span>${att}</span></div></button>`;
     setBadge('#badgeBell', s.unread_customer ?? 0);
     setBadge('#badgeList', 0);
     setBadge('#badgeMail', 0);
     const kws = s.top_keywords || [];
     $('#kwList').innerHTML = kws.length
       ? kws.map(([k, n]) => `<button type="button" class="keyword" data-kw="${esc(k)}">${esc(k)} <b>${n}</b></button>`).join('')
-      : '<span style="color:var(--ink-muted)">暂无关键词</span>';
+      : `<span style="color:var(--ink-muted)">${t('dash.no_kw')}</span>`;
   } catch (e) {
     if (e.message === 'unauth') return;
-    toast('看板加载失败');
+    toast(t('fail.dash'));
   }
 }
 
@@ -1450,9 +1671,7 @@ function syncOnlineLock(locked, online) {
   $('#brandOnline').classList.toggle('locked', lockOn);
   $('#brandOnline').disabled = lockOn;
   $('#brandOnline').setAttribute('aria-checked', on ? 'true' : 'false');
-  $('#onlineHint').textContent = lockOn
-    ? '已锁定：聊天页 24 小时显示在线（AI 值班）'
-    : '离线时聊天页显示灰色圆点；客户仍可留言';
+  $('#onlineHint').textContent = lockOn ? t('appear.lock_hint') : t('appear.online_hint');
 }
 
 function paintOps(ops) {
@@ -1460,20 +1679,22 @@ function paintOps(ops) {
   setMark($('#brandPreview'), ops);
   setMark($('#brandMark'), ops);
   setMark($('#topAvatar'), ops, '/assets/admin/avatar-default.png');
-  const name = ops.name || '运营中台';
+  const name = ops.name || t('doc.title');
   document.querySelectorAll('.brand-name').forEach(n => { n.textContent = name; });
   $('#brandName').value = name;
   const state = $('#dropUserState');
-  $('#dropUserName').innerHTML = esc(name) + '<small id="dropUserState">' + (state ? state.textContent : '运营中台') + '</small>';
+  $('#dropUserName').innerHTML = esc(name) + '<small id="dropUserState">' + (state ? state.textContent : t('doc.title')) + '</small>';
 }
 
 function paintAppearance(cfg, ops) {
+  if (cfg) window._cfg = cfg;
+  if (ops) window._ops = ops;
   if (ops) paintOps(ops);
   if (!cfg) return;
   const on = cfg.online !== false;
   const lock = cfg.online_lock !== false;
   const state = $('#dropUserState');
-  if (state) state.textContent = on ? (lock ? '聊天页 AI 24 小时在线' : '聊天页显示在线') : '聊天页显示离线';
+  if (state) state.textContent = on ? (lock ? t('user.state_24') : t('user.state_on')) : t('user.state_off');
   syncOnlineLock(lock, on);
   setChatBgPicker(cfg.chat_bg || '#f2f2f7');
 }
@@ -1484,16 +1705,16 @@ async function loadAppearance() {
     paintAppearance(cfg, ops);
   } catch (e) {
     if (e.message === 'unauth') return;
-    toast('外观设置加载失败');
+    toast(t('fail.appear'));
   }
 }
 
 function activityItem(m, i) {
   const accent = ACCENTS[i % ACCENTS.length];
-  const who = m.direction === 'customer' ? '客户' : '小美';
+  const who = m.direction === 'customer' ? t('who.customer') : t('who.bot');
   const body = String(m.content || '').replace(/\s+/g, ' ').slice(0, 56);
   return `<button type="button" class="aside-item" data-vid="${esc(m.visitor_id)}" style="border-left-color:${accent}">` +
-    `<div class="aside-item-title">与 <b>${esc(shortId(m.visitor_id))}</b> · ${esc(who)}</div>` +
+    `<div class="aside-item-title">${t('aside.with')} <b>${esc(shortId(m.visitor_id))}</b> · ${esc(who)}</div>` +
     `<div class="aside-item-meta"><span><img src="/assets/admin/icon-time.svg" alt="">${esc(fmtTime(m.created_at))}</span></div>` +
     (body ? `<div class="aside-item-body">${esc(body)}</div>` : '') +
     `</button>`;
@@ -1503,9 +1724,9 @@ function groupBlocks(items, htmlFor) {
   const today = items.filter(x => isToday(x.created_at || x.last_seen));
   const rest = items.filter(x => !isToday(x.created_at || x.last_seen));
   let html = '';
-  if (today.length) html += '<div class="aside-sec">今天</div>' + today.map(htmlFor).join('');
-  if (rest.length) html += '<div class="aside-sec">更早</div>' + rest.map(htmlFor).join('');
-  return html || '<div class="aside-empty">暂无动态</div>';
+  if (today.length) html += `<div class="aside-sec">${t('aside.today')}</div>` + today.map(htmlFor).join('');
+  if (rest.length) html += `<div class="aside-sec">${t('aside.earlier')}</div>` + rest.map(htmlFor).join('');
+  return html || `<div class="aside-empty">${t('aside.empty')}</div>`;
 }
 
 async function loadAside() {
@@ -1521,14 +1742,14 @@ async function loadAside() {
       ? groupBlocks(visitors.map(v => ({ ...v, created_at: v.last_seen })), (v, i) => {
           const accent = ACCENTS[i % ACCENTS.length];
           return `<button type="button" class="aside-item" data-vid="${esc(v.visitor_id)}" style="border-left-color:${accent}">` +
-            `<div class="aside-item-title">访客 <b>${esc(shortId(v.visitor_id))}</b></div>` +
+            `<div class="aside-item-title">${t('aside.visitor')} <b>${esc(shortId(v.visitor_id))}</b></div>` +
             `<div class="aside-item-meta"><span><img src="/assets/admin/icon-time.svg" alt="">${esc(fmtTime(v.last_seen))}</span>` +
-            `<span><img src="/assets/admin/icon-pin.svg" alt="">${v.msg_count ?? v.total_msgs ?? 0} 条</span></div></button>`;
+            `<span><img src="/assets/admin/icon-pin.svg" alt="">${t('aside.n', { n: v.msg_count ?? v.total_msgs ?? 0 })}</span></div></button>`;
         })
-      : '<div class="aside-empty">暂无访客</div>';
+      : `<div class="aside-empty">${t('aside.no_vis')}</div>`;
   } catch (e) {
     if (e.message === 'unauth') return;
-    $('#aside-activity').innerHTML = '<div class="aside-empty">动态加载失败</div>';
+    $('#aside-activity').innerHTML = `<div class="aside-empty">${t('aside.fail')}</div>`;
   }
 }
 
@@ -1549,22 +1770,22 @@ $('#logoFile').onchange = async () => {
   fd.append('file', f);
   try {
     paintOps(await apiSend('ops-logo', { method: 'POST', body: fd }));
-    toast('后台头像已更新');
+    toast(t('toast.logo'));
   } catch (e) {
-    if (e.message !== 'unauth') toast(e.message || '上传失败');
+    if (e.message !== 'unauth') toast(e.message || t('upload_fail'));
   }
 };
 $('#logoClear').onclick = async () => {
   try {
     paintOps(await apiSend('ops-logo', { method: 'DELETE' }));
-    toast('已恢复默认头像');
+    toast(t('toast.logo_reset'));
   } catch (e) {
-    if (e.message !== 'unauth') toast(e.message || '操作失败');
+    if (e.message !== 'unauth') toast(e.message || t('op_fail'));
   }
 };
 $('#brandOnline').onclick = () => {
   if ($('#brandOnlineLock').classList.contains('on')) {
-    toast('已锁定为 AI 一直在线，先关掉锁定再改');
+    toast(t('toast.lock'));
     return;
   }
   const on = !$('#brandOnline').classList.contains('on');
@@ -1603,9 +1824,9 @@ $('#brandSave').onclick = async () => {
       }),
     });
     paintAppearance(cfg, ops);
-    toast('已保存');
+    toast(t('saved'));
   } catch (e) {
-    if (e.message !== 'unauth') toast(e.message || '保存失败');
+    if (e.message !== 'unauth') toast(e.message || t('save_fail'));
   }
 };
 
@@ -1674,6 +1895,9 @@ $('#btnMail').onclick = e => {
   if (!$('#dropMail').hidden) loadHeaderFeeds();
 };
 $('#btnLang').onclick = e => { e.stopPropagation(); toggleDrop('dropLang', e.currentTarget); };
+document.querySelectorAll('.lang-row').forEach(b => {
+  b.onclick = e => { e.stopPropagation(); setUiLang(b.dataset.lang); };
+});
 $('#btnSun').onclick = () => {
   closeDrops();
   applyNight(!document.documentElement.classList.contains('admin-night'));
@@ -1683,7 +1907,7 @@ $('#btnApps').onclick = e => { e.stopPropagation(); toggleDrop('dropApps', e.cur
 $('#dropOnline').onclick = async e => {
   e.stopPropagation();
   if ($('#brandOnlineLock').classList.contains('on')) {
-    toast('已锁定为 AI 24 小时在线');
+    toast(t('toast.lock24'));
     closeDrops();
     return;
   }
@@ -1694,10 +1918,10 @@ $('#dropOnline').onclick = async e => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ online: on }),
     }));
-    toast(on ? '聊天页已设为在线' : '聊天页已设为离线');
+    toast(on ? t('toast.chat_on') : t('toast.chat_off'));
     closeDrops();
   } catch (err) {
-    if (err.message !== 'unauth') toast(err.message || '保存失败');
+    if (err.message !== 'unauth') toast(err.message || t('save_fail'));
   }
 };
 $('#asideClose').onclick = closeAside;
@@ -1735,13 +1959,13 @@ async function loadStaff() {
   const rows = data.data || [];
   $('#staffBody').innerHTML = rows.length
     ? rows.map(s =>
-      `<tr><td>${esc(s.login_name)}</td><td>${esc(s.name)}</td><td>${esc(s.role)}</td>` +
+      `<tr><td>${esc(s.login_name)}</td><td>${esc(s.name)}</td><td>${esc(s.role==='admin'?t('staff.admin'):t('staff.agent'))}</td>` +
       `<td>${esc(s.skill_group_name || '')}</td><td>${esc(s.max_chats)}</td>` +
-      `<td>${esc(s.presence)}${s.enabled ? '' : ' · 停用'}</td>` +
-      `<td><button type="button" class="btn-quiet" data-off="${s.id}">${s.presence==='online'?'强制下线':'上线'}</button> ` +
-      `<button type="button" class="btn-quiet" data-del="${s.id}">删除</button></td></tr>`
+      `<td>${esc(s.presence)}${s.enabled ? '' : ' · ' + t('staff.disabled')}</td>` +
+      `<td><button type="button" class="btn-quiet" data-off="${s.id}">${s.presence==='online'?t('staff.off'):t('staff.on')}</button> ` +
+      `<button type="button" class="btn-quiet" data-del="${s.id}">${t('staff.del')}</button></td></tr>`
     ).join('')
-    : '<tr><td colspan="7" class="muted">还没有坐席。填登录名、显示名、至少 4 位密码，再点添加。</td></tr>';
+    : '<tr><td colspan="7" class="muted">' + t('staff.empty') + '</td></tr>';
   $('#staffBody').onclick = async e => {
     try {
       const off = e.target.closest('[data-off]');
@@ -1751,9 +1975,9 @@ async function loadStaff() {
         await apiSend('staff/' + off.dataset.off, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ presence: row && row.presence === 'online' ? 'offline' : 'online' }) });
         await loadStaff();
       }
-      if (del && confirm('删除该坐席？')) { await apiSend('staff/' + del.dataset.del, { method: 'DELETE' }); await loadStaff(); }
+      if (del && confirm(t('staff.confirm'))) { await apiSend('staff/' + del.dataset.del, { method: 'DELETE' }); await loadStaff(); }
     } catch (err) {
-      if (err.message !== 'unauth') toast(err.message || '操作失败');
+      if (err.message !== 'unauth') toast(err.message || t('op_fail'));
     }
   };
   window._groups = groups;
@@ -1763,7 +1987,7 @@ $('#staffAdd') && ($('#staffAdd').onclick = async () => {
   const name = $('#staffName').value.trim();
   const password = $('#staffPass').value;
   if (!login_name || !name || password.length < 4) {
-    toast('登录名、显示名必填，密码至少 4 位');
+    toast(t('staff.need'));
     return;
   }
   try {
@@ -1772,10 +1996,10 @@ $('#staffAdd') && ($('#staffAdd').onclick = async () => {
       skill_group_id: (window._groups && window._groups[0] && window._groups[0].id) || 1
     })});
     $('#staffLogin').value = $('#staffName').value = $('#staffPass').value = '';
-    toast('已添加坐席');
+    toast(t('staff.added'));
     await loadStaff();
   } catch (e) {
-    if (e.message !== 'unauth') toast(e.message || '添加失败');
+    if (e.message !== 'unauth') toast(e.message || t('add_fail'));
   }
 });
 
@@ -1788,8 +2012,8 @@ function renderVisitorAvatars(items, max) {
   const list = items || [];
   $('#visitorAvCount').textContent = list.length + ' / ' + (max || 24);
   $('#visitorAvPool').innerHTML = list.map(a =>
-    `<div class="slot"><img src="${esc(a.url)}" alt=""><button type="button" class="x" data-av="${esc(a.name)}" aria-label="删除">×</button></div>`
-  ).join('') || '<p class="hint">还没有客户头像，上传后聊天页右侧才会显示图片。</p>';
+    `<div class="slot"><img src="${esc(a.url)}" alt=""><button type="button" class="x" data-av="${esc(a.name)}" aria-label="${t('staff.del')}">×</button></div>`
+  ).join('') || '<p class="hint">' + t('av.none') + '</p>';
 }
 
 async function loadVisitorAvatars() {
@@ -1811,9 +2035,9 @@ async function loadBrands() {
   await loadVisitorAvatars();
 }
 $('#brandCfgSave') && ($('#brandCfgSave').onclick = async () => {
-  if (!window._brandId) { toast('客服通道还没加载到，请刷新后再试'); return; }
+  if (!window._brandId) { toast(t('brand.no_id')); return; }
   const name = $('#visitorName').value.trim();
-  if (!name) { toast('请填写机器人名称'); return; }
+  if (!name) { toast(t('brand.need_name')); return; }
   try {
     await apiSend('brands/' + window._brandId, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({
       name, welcome: $('#brandWelcome').value, handoff_keywords: $('#brandHandoff').value,
@@ -1821,9 +2045,9 @@ $('#brandCfgSave') && ($('#brandCfgSave').onclick = async () => {
       allow_file: $('#capFile').classList.contains('on'),
       allow_voice: $('#capVoice').classList.contains('on'),
     })});
-    toast('已保存');
+    toast(t('saved'));
   } catch (e) {
-    if (e.message !== 'unauth') toast(e.message || '保存失败');
+    if (e.message !== 'unauth') toast(e.message || t('save_fail'));
   }
 });
 $('#visitorLogoPick') && ($('#visitorLogoPick').onclick = () => $('#visitorLogoFile').click());
@@ -1835,17 +2059,17 @@ $('#visitorLogoFile') && ($('#visitorLogoFile').onchange = async () => {
   fd.append('file', f);
   try {
     paintVisitorBrand(await apiSend('logo', { method: 'POST', body: fd }));
-    toast('机器人头像已更新');
+    toast(t('toast.bot_logo'));
   } catch (e) {
-    if (e.message !== 'unauth') toast(e.message || '上传失败');
+    if (e.message !== 'unauth') toast(e.message || t('upload_fail'));
   }
 });
 $('#visitorLogoClear') && ($('#visitorLogoClear').onclick = async () => {
   try {
     paintVisitorBrand(await apiSend('logo', { method: 'DELETE' }));
-    toast('已恢复默认机器人头像');
+    toast(t('toast.bot_reset'));
   } catch (e) {
-    if (e.message !== 'unauth') toast(e.message || '操作失败');
+    if (e.message !== 'unauth') toast(e.message || t('op_fail'));
   }
 });
 $('#visitorAvPick') && ($('#visitorAvPick').onclick = () => $('#visitorAvFile').click());
@@ -1858,9 +2082,9 @@ $('#visitorAvFile') && ($('#visitorAvFile').onchange = async () => {
   try {
     const av = await apiSend('visitor-avatars', { method: 'POST', body: fd });
     renderVisitorAvatars(av.data || [], av.max);
-    toast('已上传 ' + files.length + ' 张客户头像');
+    toast(t('toast.avs', { n: files.length }));
   } catch (e) {
-    if (e.message !== 'unauth') toast(e.message || '上传失败');
+    if (e.message !== 'unauth') toast(e.message || t('upload_fail'));
   }
 });
 $('#visitorAvPool') && ($('#visitorAvPool').onclick = async e => {
@@ -1869,9 +2093,9 @@ $('#visitorAvPool') && ($('#visitorAvPool').onclick = async e => {
   try {
     const av = await apiSend('visitor-avatars/' + encodeURIComponent(b.dataset.av), { method: 'DELETE' });
     renderVisitorAvatars(av.data || [], av.max);
-    toast('已删除');
+    toast(t('toast.del'));
   } catch (err) {
-    if (err.message !== 'unauth') toast(err.message || '删除失败');
+    if (err.message !== 'unauth') toast(err.message || t('del_fail'));
   }
 });
 
@@ -1899,28 +2123,28 @@ $('#routeSave') && ($('#routeSave').onclick = async () => {
       routing_mode: $('#routeMode').value, sticky_enabled: $('#routeSticky').classList.contains('on'),
       business_hours: { enabled: $('#hoursOn').classList.contains('on'), start: $('#hoursStart').value, end: $('#hoursEnd').value, days: [1,2,3,4,5] }
     })});
-    toast('路由已保存');
+    toast(t('route.saved'));
   } catch (e) {
-    if (e.message !== 'unauth') toast(e.message || '保存失败');
+    if (e.message !== 'unauth') toast(e.message || t('save_fail'));
   }
 });
 $('#groupAdd') && ($('#groupAdd').onclick = async () => {
   try {
     const name = $('#groupName').value.trim();
-    if (!name) { toast('请填写组名'); return; }
+    if (!name) { toast(t('route.need_g')); return; }
     await apiSend('skill-groups', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name }) });
     $('#groupName').value = '';
     await loadRouting();
   } catch (e) {
-    if (e.message !== 'unauth') toast(e.message || '添加失败');
+    if (e.message !== 'unauth') toast(e.message || t('add_fail'));
   }
 });
 
 async function loadCanned() {
   const data = await api('canned');
   $('#canList').innerHTML = (data.data || []).map(x =>
-    `<div class="can-item"><div><b>${esc(x.title)}</b><div class="hint">${esc(x.content)}</div></div><button type="button" class="btn-quiet" data-cid="${x.id}">删除</button></div>`
-  ).join('') || '<p class="hint">还没有问题和答案。加上之后会出现在聊天页欢迎语下面。</p>';
+    `<div class="can-item"><div><b>${esc(x.title)}</b><div class="hint">${esc(x.content)}</div></div><button type="button" class="btn-quiet" data-cid="${x.id}">${t('staff.del')}</button></div>`
+  ).join('') || '<p class="hint">' + t('can.empty') + '</p>';
   $('#canList').onclick = async e => {
     const b = e.target.closest('[data-cid]');
     if (b) { await apiSend('canned/' + b.dataset.cid, { method: 'DELETE' }); loadCanned(); }
@@ -1930,19 +2154,19 @@ $('#canAdd') && ($('#canAdd').onclick = async () => {
   try {
     const title = $('#canTitle').value.trim();
     const content = $('#canBody').value.trim();
-    if (!title || !content) { toast('问题和答案都要填'); return; }
+    if (!title || !content) { toast(t('can.need')); return; }
     await apiSend('canned', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ title, content }) });
     $('#canTitle').value = $('#canBody').value = '';
-    toast('已添加，刷新聊天页就能点');
+    toast(t('can.added'));
     await loadCanned();
   } catch (e) {
-    if (e.message !== 'unauth') toast(e.message || '添加失败');
+    if (e.message !== 'unauth') toast(e.message || t('add_fail'));
   }
 });
 
 async function loadReports() {
   const csat = await api('csat');
-  $('#csatBox').textContent = '评价 ' + (csat.count || 0) + ' 条，平均 ' + (csat.avg || 0) + ' 分';
+  $('#csatBox').textContent = t('rep.line', { n: csat.count || 0, avg: csat.avg || 0 });
   const rep = await api('reports/agents');
   $('#reportBody').innerHTML = (rep.data || []).map(s =>
     `<tr><td>${esc(s.name)}</td><td>${esc(s.presence)}</td><td>${s.assigned_total||0}</td><td>${s.open_now||0}</td><td>${s.replies||0}</td></tr>`
@@ -1950,6 +2174,7 @@ async function loadReports() {
 }
 
 (async () => {
+  applyUiLang();
   try { await api('visitors'); afterLogin(); }
   catch (e) { showLogin(); }
 })();
