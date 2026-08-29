@@ -304,7 +304,7 @@ tr.clickable{cursor:pointer}
 .hdr-drop-wrap{position:relative;flex-shrink:0}
 .hdr-ico[aria-expanded="true"],.hdr-tool[aria-expanded="true"],.top-avatar[aria-expanded="true"]{background:#f3f4f7}
 .drop{
-  position:absolute;top:calc(100% + 6px);right:0;width:320px;max-width:calc(100vw - 24px);
+  position:absolute;top:calc(100% + 6px);left:0;right:auto;width:320px;max-width:calc(100vw - 24px);
   background:var(--surface);border:1px solid var(--hairline);border-radius:8px;
   box-shadow:0 8px 24px rgba(0,0,21,.12);z-index:70;overflow:hidden;
 }
@@ -1248,12 +1248,27 @@ function closeAside() {
 
 function closeDrops(except) {
   document.querySelectorAll('.drop').forEach(d => {
-    if (d.id !== except) d.hidden = true;
+    if (d.id !== except) {
+      d.hidden = true;
+      d.style.left = '';
+      d.style.right = '';
+    }
   });
   document.querySelectorAll('[aria-haspopup="true"]').forEach(b => {
     if (except && b.getAttribute('aria-controls') === except) return;
     b.setAttribute('aria-expanded', 'false');
   });
+}
+
+function placeDrop(el) {
+  el.style.left = '0';
+  el.style.right = 'auto';
+  const pad = 12;
+  const box = el.getBoundingClientRect();
+  let shift = 0;
+  if (box.left < pad) shift += pad - box.left;
+  if (box.right + shift > window.innerWidth - pad) shift -= (box.right + shift) - (window.innerWidth - pad);
+  el.style.left = shift + 'px';
 }
 
 function toggleDrop(id, btn) {
@@ -1263,6 +1278,7 @@ function toggleDrop(id, btn) {
   closeAside();
   el.hidden = !willOpen;
   btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+  if (willOpen) placeDrop(el);
 }
 
 function applyNight(on) {
@@ -1558,6 +1574,7 @@ function fmtK(n) {
 
 function setBadge(id, n) {
   const el = $(id);
+  if (!el) return;
   const v = Number(n) || 0;
   el.hidden = v <= 0;
   el.textContent = v > 99 ? '99' : String(v);
@@ -1574,8 +1591,8 @@ function sparkSvg(values) {
 }
 
 function vsYesterday(today, yday) {
-  const t = Number(today) || 0, y = Number(yday) || 0;
-  const d = t - y;
+  const now = Number(today) || 0, prev = Number(yday) || 0;
+  const d = now - prev;
   if (d === 0) return { t: t('vs.flat'), down: false };
   return { t: t('vs.diff', { n: (d > 0 ? '+' : '') + d }), down: d < 0 };
 }

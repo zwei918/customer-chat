@@ -12,5 +12,8 @@
 
 # 备份与缓存
 *.bak
+*_old.html
+* copy.html
 __pycache__/
 *.pyc
+work/*.png
