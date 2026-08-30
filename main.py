@@ -153,6 +153,19 @@ async def api_visitor_avatar(name: str):
     return FileResponse(path, media_type=media, headers={"Cache-Control": "public, max-age=86400"})
 
 
+@app.get("/api/chat-file/{name}")
+async def api_chat_file(name: str):
+    path = db.chat_file_path(name)
+    if not path:
+        return JSONResponse({"error": "文件不存在"}, status_code=404)
+    media = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+             ".webp": "image/webp", ".gif": "image/gif", ".pdf": "application/pdf",
+             ".txt": "text/plain", ".mp3": "audio/mpeg", ".wav": "audio/wav",
+             ".m4a": "audio/mp4", ".webm": "audio/webm", ".ogg": "audio/ogg",
+             ".aac": "audio/aac"}.get(path.suffix.lower(), "application/octet-stream")
+    return FileResponse(path, media_type=media, headers={"Cache-Control": "private, max-age=86400"})
+
+
 def _guess_ext(filename: str, data: bytes) -> str:
     name = (filename or "").lower()
     if data.startswith(b"\x89PNG"):
@@ -265,7 +278,7 @@ async def _proxy_stream(payload: dict, visitor: str, pending_ids: list[int]):
 
 @app.post("/api/upload")
 async def api_upload(request: Request, file: UploadFile = File(...)) -> JSONResponse:
-    """客户上传图片/文件/语音 → AstrBot OpenAPI 附件，只返回 attachment_id，不落库。"""
+    """客户上传图片/文件/语音：本机落盘供刷新回看，同时交给 AstrBot 拿 attachment_id。"""
     visitor_id = _visitor(request.headers)
     ip = client_ip(request)
     if not _allow(f"up:{visitor_id}:{ip}", UPLOAD_LIMIT, UPLOAD_WINDOW):
@@ -278,6 +291,7 @@ async def api_upload(request: Request, file: UploadFile = File(...)) -> JSONResp
     if not ok:
         return JSONResponse({"error": info}, status_code=400)
 
+    saved = db.save_chat_file(data, info)
     headers = {**_auth_headers()}
     files = {"file": (file.filename or f"upload{info}", data, file.content_type or "application/octet-stream")}
     try:
@@ -296,6 +310,7 @@ async def api_upload(request: Request, file: UploadFile = File(...)) -> JSONResp
         "attachment_id": info_body.get("attachment_id"),
         "type": info_body.get("type", "file"),
         "filename": file.filename,
+        "url": saved["url"],
     })
 
 
@@ -306,9 +321,9 @@ def _insert_customer_parts(session_id: str | None, visitor_id: str, parts: list[
         if ptype == "plain":
             ids.append(db.insert_msg(session_id, visitor_id, "customer", "text", p.get("text", ""), sender_type="visitor"))
         elif ptype == "image":
-            ids.append(db.insert_msg(session_id, visitor_id, "customer", "image", "图片", sender_type="visitor"))
+            ids.append(db.insert_msg(session_id, visitor_id, "customer", "image", str(p.get("url") or "").strip() or "图片", sender_type="visitor"))
         elif ptype in ("file", "record"):
-            ids.append(db.insert_msg(session_id, visitor_id, "customer", ptype, p.get("filename") or p.get("type") or ptype, sender_type="visitor"))
+            ids.append(db.insert_msg(session_id, visitor_id, "customer", ptype, str(p.get("url") or p.get("filename") or p.get("type") or ptype), sender_type="visitor"))
     return ids
 
 

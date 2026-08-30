@@ -18,8 +18,8 @@
 ## 当前状态
 
 - 状态：进行中（V1 本机可运行：访客 H5 + 坐席工作台 + 运营中台）
-- 最近更新：2026-08-30
-- 下一步：现行版已推 `zwei918/customer-chat`。线上 `chat.okva.cc` / `admin01.okva.cc` 部署后才换文件。上线前服务器仍要配齐 `ADMIN_PASSWORD` + `ADMIN_SECRET`（禁止默认 `changeme-secret`）。
+- 最近更新：2026-08-31
+- 下一步：现行版已推 `zwei918/customer-chat`。线上部署后才换文件。客户图片落到 `uploads/chat/`。坐席 `/desk` 已适配手机（先列表再对话）。超管登录名留空用环境密码；客服管理「管理员」进中台，「坐席」进工作台。
 - 视觉：聊天页苹果原则；后台按 Figma CoreUI 骨架。顶栏七个图标和运营看板都接 H5 真实会话，不搬稿里的交通图和社交假数据。
 
 ## 目录说明
@@ -67,7 +67,7 @@ ASTRBOT_API_KEY=<key> ASTRBOT_URL=http://localhost:6185 \
 ## 能力
 
 - 文本对话（SSE 流式）
-- 图片上传（qwen3.7-flash 视觉识别，OpenRouter $0.03/M 最便宜视觉模型）
+- 图片上传（qwen3.7-flash 视觉识别）。原图落到本机 `uploads/chat/`，刷新后仍能打开；同时把附件交给 AstrBot。
 - 文件上传（小美能感知附件；读取文件内容需装文档解析插件或让客户粘贴文字）
 - 语音输入（按住说话，浏览器 Web Speech API 转文字；Chrome/Edge 支持，不支持时按钮自动隐藏）
 - 会话保持 + 聊天记录本地保存（localStorage `xiaomei_history` 存 100 条，刷新恢复；换设备/清缓存会丢显示记录，AI 上下文仍在服务端）

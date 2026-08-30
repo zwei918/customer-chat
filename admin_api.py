@@ -135,14 +135,17 @@ async def login(req: LoginReq, response: Response, request: Request):
     if len(q) >= LOGIN_LIMIT:
         raise HTTPException(status_code=429, detail="尝试过于频繁，请稍后再试")
     username = (req.username or "").strip()
-    if username and username not in ("admin", "超管"):
-        staff = db.get_staff_by_login(username)
-        if not staff or int(staff.get("enabled") or 0) != 1 or not db.verify_password(req.password, staff.get("password_hash") or ""):
+    staff = db.find_staff_login(username) if username else None
+    if staff:
+        if int(staff.get("enabled") or 0) != 1 or not db.verify_password(req.password, staff.get("password_hash") or ""):
             q.append(now)
             raise HTTPException(status_code=401, detail="账号或密码错误")
         _issue_cookie(response, request, int(staff["id"]))
         db.update_staff(int(staff["id"]), presence="online")
         return {"ok": True, "role": "admin" if staff.get("role") in ("admin", "owner") else "agent", "staff_id": int(staff["id"])}
+    if username and username not in ("admin", "超管"):
+        q.append(now)
+        raise HTTPException(status_code=401, detail="账号或密码错误")
     if req.password != ADMIN_PASSWORD:
         q.append(now)
         raise HTTPException(status_code=401, detail="密码错误")

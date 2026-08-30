@@ -11,6 +11,6 @@ alwaysApply: true
 - 项目经验放入 `logs/`。
 - 跨项目经验再沉淀到 `/Users/chen/Cursor/Cursor总工作台`。
 - 日常推送到 `zwei918/customer-chat`，不要推回 `chenxi5378-oss`。
-- 改版后旧页面必须从本地、线上和 GitHub 清掉，禁止新旧并存。
+- 改版后旧页面和旧配置必须从本地、线上和 GitHub 清掉，该删的就删，禁止新旧并存。
 - ApiKey 和后台密码不进 git。
 - 编码遵守四条军规：先思考、简单优先、外科手术式修改、目标驱动验证。

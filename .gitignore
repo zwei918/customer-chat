@@ -18,3 +18,4 @@ __pycache__/
 *.pyc
 work/*.png
 .playwright-cli/
+uploads/chat/

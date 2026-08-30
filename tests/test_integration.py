@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import tempfile
+from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -214,6 +215,10 @@ auth_hdr = {"Cookie": f"admin_session={r.cookies.get('admin_session') or c.cooki
 
 r = c.get("/desk")
 check("desk 页面 200", r.status_code == 200 and "坐席工作台" in r.text)
+desk_html = (Path(__file__).resolve().parents[1] / "desk.html").read_text(encoding="utf-8")
+check("工作台绑定在线按钮", "$('#presenceBtn').onclick" in desk_html)
+check("工作台有手机布局", "max-width:768px" in desk_html and "chat-open" in desk_html)
+check("工作台队列顺序", desk_html.find('data-q="queued"') < desk_html.find('data-q="all"') < desk_html.find('data-q="mine"'))
 
 r = c.get("/admin/api/me", headers=auth_hdr)
 check("超管 me", r.status_code == 200 and r.json().get("role") == "superadmin")
@@ -312,6 +317,39 @@ check("坐席报表", r.status_code == 200 and isinstance(r.json().get("data"), 
 
 r = c.get("/admin/api/inbox?queue=all", headers=auth_hdr)
 check("收件箱全部", r.status_code == 200 and isinstance(r.json().get("data"), list))
+
+png2 = b"\x89PNG\r\n\x1a\n" + b"\x00" * 64
+with patch("main.httpx.AsyncClient", _FakeClient):
+    r = c.post(
+        "/api/upload",
+        files={"file": ("keep.png", png2, "image/png")},
+        headers={"X-Visitor-Id": "img-keep-1"},
+    )
+up = r.json()
+check("upload 返回可访问 url", str(up.get("url") or "").startswith("/api/chat-file/"), f"(body={r.text[:160]})")
+r = c.get(up["url"])
+check("本机存了原图", r.status_code == 200 and r.content.startswith(b"\x89PNG"), f"(status={r.status_code})")
+with patch("main.httpx.AsyncClient", _FakeClient):
+    r = c.post(
+        "/api/chat",
+        json={"message": "", "parts": [{"type": "image", "attachment_id": up.get("attachment_id"), "url": up.get("url")}]},
+        headers={"X-Visitor-Id": "img-keep-1"},
+    )
+stored = [m for m in db.query_messages() if m.get("msg_type") == "image" and (up.get("url") or "") in (m.get("content") or "")]
+check("图片地址已落库", len(stored) >= 1, f"(n={len(stored)})")
+
+r = c.post("/admin/api/staff", json={"login_name": "admin", "name": "后台管理员", "password": "consolepass", "role": "admin", "max_chats": 8}, headers=auth_hdr)
+check("总控台可建 admin 登录名", r.status_code == 200, f"(body={r.text[:160]})")
+ops_c = TestClient(main.app)
+r = ops_c.post("/admin/login", json={"username": "admin", "password": "consolepass"})
+check("总控台账号能登后台", r.status_code == 200 and r.json().get("role") == "admin", f"(body={r.text[:160]})")
+ops_hdr = {"Cookie": f"admin_session={r.cookies.get('admin_session') or ops_c.cookies.get('admin_session')}"}
+r = ops_c.get("/admin/api/me", headers=ops_hdr)
+check("总控台账号 me 是管理员", r.status_code == 200 and r.json().get("role") == "admin", f"(body={r.text[:160]})")
+r = ops_c.post("/admin/login", json={"username": "后台管理员", "password": "consolepass"})
+check("显示名也能登", r.status_code == 200 and r.json().get("role") == "admin", f"(body={r.text[:160]})")
+r = c.post("/admin/login", json={"password": "testpass"})
+check("超管仍可空用户名登录", r.status_code == 200 and r.json().get("role") == "superadmin")
 
 print("\n=== 生产向集成测试：全部通过 ===")
 print(f"临时库: {os.environ['XIAOMEI_DB']}")

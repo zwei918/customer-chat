@@ -647,9 +647,13 @@ function renderHistory() {
       item.attachments.forEach(a => {
         const el = document.createElement('div');
         el.className = 'attachment';
-        if (a.kind === 'image') el.innerHTML = '<span class="file-name">图片</span>';
+        if (a.kind === 'image' && a.url) el.innerHTML = '<img src="' + esc(a.url) + '" alt="图片">';
+        else if (a.kind === 'image') el.innerHTML = '<span class="file-name">图片</span>';
+        else if (a.kind === 'voice' && a.url) el.innerHTML = '<audio controls src="' + esc(a.url) + '"></audio>';
         else if (a.kind === 'voice') el.innerHTML = '<span class="file-name">语音</span>';
-        else el.innerHTML = '<span class="file-name">' + esc(a.filename || '文件') + '</span>';
+        else el.innerHTML = a.url
+          ? '<a href="' + esc(a.url) + '" target="_blank" rel="noopener">' + esc(a.filename || '文件') + '</a>'
+          : '<span class="file-name">' + esc(a.filename || '文件') + '</span>';
         content.appendChild(el);
       });
     }
@@ -746,7 +750,7 @@ function apiParts(parts) {
     let type = p.type || 'file';
     if (p.kind === 'voice' || type === 'voice') type = 'record';
     if (p.kind === 'image') type = 'image';
-    return { type, attachment_id: p.attachment_id, filename: p.filename };
+    return { type, attachment_id: p.attachment_id, filename: p.filename, url: p.url || '' };
   }).filter(p => p.attachment_id && (p.type === 'image' || p.type === 'file' || p.type === 'record'));
 }
 
@@ -901,11 +905,19 @@ async function sendFileNow(file, kind) {
     att.classList.remove('sending');
     const st = att.querySelector('.send-status');
     if (st) st.remove();
-    pushHistory(tid, { role: 'user', text: '', attachments: [{ kind, filename: file.name }], at: Date.now() });
+    if (data.url) {
+      const img = att.querySelector('img');
+      if (img) img.src = data.url;
+      const audio = att.querySelector('audio');
+      if (audio) audio.src = data.url;
+    }
+    if (url) URL.revokeObjectURL(url);
+    pushHistory(tid, { role: 'user', text: '', attachments: [{ kind, filename: file.name, url: data.url || '' }], at: Date.now() });
     enqueueBot('', [{
       type: data.type || (kind === 'image' ? 'image' : 'file'),
       attachment_id: data.attachment_id,
       filename: file.name,
+      url: data.url || '',
       kind,
     }], tid);
   } catch (e) {

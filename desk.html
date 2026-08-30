@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>坐席工作台</title>
 <style>
@@ -43,24 +43,46 @@ body{font-family:system-ui,-apple-system,"PingFang SC",sans-serif;background:var
 .bubble{max-width:72%;padding:10px 14px;border-radius:14px;font-size:15px;line-height:1.45;white-space:pre-wrap;word-break:break-word}
 .stage{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--canvas)}
 .top{height:56px;background:#fff;border-bottom:1px solid var(--hairline);display:flex;align-items:center;gap:10px;padding:0 16px}
-.top h2{font-size:16px;font-weight:600;flex:1}
+.top h2{font-size:16px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.desk-back{display:none;flex-shrink:0}
 .bubble.v{background:#321fdb;color:#fff}
 .bubble.a{background:#fff;border:1px solid var(--hairline)}
 .bubble.s{margin:12px auto;background:transparent;color:var(--ink-muted);font-size:12px;text-align:center}
+.bubble img.att{max-width:220px;max-height:220px;border-radius:10px;display:block}
 .composer{background:#fff;border-top:1px solid var(--hairline);padding:12px 16px;display:flex;flex-direction:column;gap:8px}
 .composer textarea{width:100%;min-height:44px;max-height:120px;border:1px solid var(--hairline);border-radius:8px;padding:10px;font:inherit;resize:none}
+.composer .actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;align-items:center}
 .canned{display:flex;gap:6px;flex-wrap:wrap}
 .canned button{border:1px solid var(--hairline);background:#fff;border-radius:980px;padding:4px 10px;font-size:12px;cursor:pointer}
 .empty{margin:auto;color:var(--ink-muted);text-align:center;padding:40px}
 a.nav{color:rgba(255,255,255,.7);font-size:13px;padding:12px 16px;text-decoration:none}
 a.nav:hover{color:#fff}
+@media (max-width:768px){
+  #login{margin:12vh 16px;padding:28px 22px}
+  #login input,.composer textarea{font-size:16px}
+  .app{flex-direction:column}
+  .rail{width:100%;min-height:0;flex:1;padding-bottom:env(safe-area-inset-bottom)}
+  .stage{display:none;width:100%;height:100dvh}
+  .app.chat-open .rail{display:none}
+  .app.chat-open .stage{display:flex}
+  .desk-back{display:inline-flex;min-height:36px}
+  .top{height:auto;min-height:56px;padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top));flex-wrap:wrap}
+  .chat{padding:12px}
+  .bubble{max-width:86%}
+  .composer{padding:10px 12px;padding-bottom:max(10px,env(safe-area-inset-bottom))}
+  .queues button,.item{min-height:44px}
+  .btn,.btn-quiet{min-height:36px}
+}
+@media (prefers-reduced-motion: reduce){
+  .stage,.rail{transition:none}
+}
 </style>
 </head>
 <body>
 <div id="login">
   <h1>坐席工作台</h1>
   <p>认领排队会话，直接回复访客。超管可用环境密码登录后去中台建账号。</p>
-  <form id="loginForm">
+  <form id="loginForm" action="#" method="post">
     <div class="err" id="err"></div>
     <input id="user" placeholder="登录名（超管可空）" autocomplete="username">
     <input id="pw" type="password" placeholder="密码" autocomplete="current-password" required>
@@ -75,8 +97,8 @@ a.nav:hover{color:#fff}
     </div>
     <div class="queues">
       <button type="button" data-q="queued" class="on">待接</button>
-      <button type="button" data-q="mine">我的</button>
       <button type="button" data-q="all">全部</button>
+      <button type="button" data-q="mine">我的</button>
     </div>
     <div class="list" id="convList"></div>
     <a class="nav" href="/admin">运营中台</a>
@@ -84,6 +106,7 @@ a.nav:hover{color:#fff}
   </aside>
   <section class="stage">
     <div class="top">
+      <button class="btn-quiet desk-back" id="backBtn" type="button">会话列表</button>
       <h2 id="title">选择一个会话</h2>
       <button class="btn-quiet" id="claimBtn" type="button" hidden>认领</button>
       <button class="btn-quiet" id="resolveBtn" type="button" hidden>结束</button>
@@ -92,7 +115,7 @@ a.nav:hover{color:#fff}
     <div class="composer hidden" id="composer">
       <div class="canned" id="canned"></div>
       <textarea id="reply" placeholder="输入回复，Enter 发送"></textarea>
-      <div style="display:flex;gap:8px;justify-content:flex-end">
+      <div class="actions">
         <select id="transferSel" hidden></select>
         <button class="btn-quiet" id="transferBtn" type="button" hidden>转接</button>
         <button class="btn" id="sendBtn" type="button">发送</button>
@@ -115,7 +138,15 @@ async function api(path, opt={}) {
 
 function showLogin() {
   $('#app').classList.add('hidden');
+  $('#app').classList.remove('chat-open');
   $('#login').classList.remove('hidden');
+}
+
+function isMobile() { return window.matchMedia('(max-width: 768px)').matches; }
+
+function closeChat() {
+  $('#app').classList.remove('chat-open');
+  $('#title').textContent = '选择一个会话';
 }
 
 async function afterLogin() {
@@ -138,9 +169,11 @@ $('#loginForm').onsubmit = async e => {
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ username: $('#user').value.trim(), password: $('#pw').value })
     });
-    if (r.ok) afterLogin();
+    if (r.ok) await afterLogin();
     else $('#err').textContent = r.status === 503 ? '后台未配置密码' : '账号或密码错误';
-  } catch (e) { $('#err').textContent = '网络不可用'; }
+  } catch (err) {
+    $('#err').textContent = err.message === 'unauth' ? '登录已失效，请重试' : '网络不可用';
+  }
   $('#loginBtn').disabled = false;
 };
 
@@ -191,12 +224,17 @@ async function openConv(id) {
     const kind = m.sender_type === 'visitor' || m.direction === 'customer' ? 'v' : (m.sender_type === 'system' ? 's' : 'a');
     if (kind === 's') return `<div class="bubble s">${esc(m.content)}</div>`;
     const img = kind === 'v' && av ? `<img class="vav" src="${esc(av)}" alt="">` : '';
-    return `<div class="row ${kind}">${img}<div class="bubble ${kind}">${esc(m.content)}</div></div>`;
+    const body = (m.msg_type === 'image' && String(m.content || '').startsWith('/api/chat-file/'))
+      ? `<img class="att" src="${esc(m.content)}" alt="图片">`
+      : esc(m.content);
+    return `<div class="row ${kind}">${img}<div class="bubble ${kind}">${body}</div></div>`;
   }).join('') || '<div class="empty">还没有消息</div>';
   $('#chat').scrollTop = $('#chat').scrollHeight;
   document.querySelectorAll('.item').forEach(el => el.classList.toggle('on', el.dataset.id === id));
+  $('#app').classList.add('chat-open');
 }
 
+$('#backBtn').onclick = closeChat;
 $('#claimBtn').onclick = async () => {
   await api('inbox/' + encodeURIComponent(current) + '/claim', { method: 'POST', body: '{}' });
   queue = 'mine';
@@ -237,6 +275,7 @@ $('#transferBtn').onclick = async () => {
   await loadList();
   openConv(current);
 };
+$('#presenceBtn').onclick = async () => {
   presence = presence === 'online' ? 'away' : 'online';
   await api('presence', { method: 'POST', body: JSON.stringify({ presence }) });
   $('#presenceBtn').textContent = presence === 'online' ? '在线' : '离开';
@@ -250,7 +289,10 @@ let es;
 function startLive() {
   if (es) es.close();
   es = new EventSource('/admin/api/live');
-  es.onmessage = () => { loadList(); if (current) openConv(current); };
+  es.onmessage = () => {
+    loadList();
+    if (current && (!isMobile() || $('#app').classList.contains('chat-open'))) openConv(current);
+  };
 }
 
 fetch('/admin/api/me', { credentials: 'include' }).then(r => { if (r.ok) afterLogin(); }).catch(() => {});

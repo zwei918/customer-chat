@@ -464,8 +464,13 @@ def stats() -> dict:
 BRAND_DIR = _UPLOAD_ROOT / "uploads" / "brand"
 OPS_DIR = _UPLOAD_ROOT / "uploads" / "ops"
 VISITOR_AVATAR_DIR = _UPLOAD_ROOT / "uploads" / "visitors"
+CHAT_FILE_DIR = _UPLOAD_ROOT / "uploads" / "chat"
 MAX_VISITOR_AVATARS = 24
 _AVATAR_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
+_CHAT_FILE_EXTS = _AVATAR_EXTS | {
+    ".pdf", ".txt", ".doc", ".docx", ".xls", ".xlsx",
+    ".mp3", ".wav", ".m4a", ".webm", ".ogg", ".aac",
+}
 
 
 def get_setting(key: str, default: str = "") -> str:
@@ -553,6 +558,30 @@ def delete_visitor_avatar(name: str) -> None:
     path = visitor_avatar_path(name)
     if path:
         path.unlink(missing_ok=True)
+
+
+def save_chat_file(data: bytes, ext: str) -> dict:
+    ext = (ext or "").lower()
+    if ext not in _CHAT_FILE_EXTS:
+        raise ValueError("不支持的文件类型")
+    CHAT_FILE_DIR.mkdir(parents=True, exist_ok=True)
+    name = secrets.token_hex(16) + ext
+    path = CHAT_FILE_DIR / name
+    path.write_bytes(data)
+    return {"name": name, "url": f"/api/chat-file/{name}"}
+
+
+def chat_file_path(name: str) -> Path | None:
+    raw = (name or "").strip()
+    if not raw or "/" in raw or "\\" in raw or ".." in raw:
+        return None
+    folder = CHAT_FILE_DIR.resolve()
+    path = (CHAT_FILE_DIR / raw).resolve()
+    if not CHAT_FILE_DIR.exists() or path.parent != folder or not path.is_file():
+        return None
+    if path.suffix.lower() not in _CHAT_FILE_EXTS:
+        return None
+    return path
 
 
 def _pick_visitor_avatar() -> str:
@@ -755,6 +784,19 @@ def get_staff(staff_id: int) -> dict | None:
 def get_staff_by_login(login_name: str) -> dict | None:
     row = _conn().execute("SELECT * FROM staff WHERE login_name=?", (login_name,)).fetchone()
     return dict(row) if row else None
+
+
+def find_staff_login(username: str) -> dict | None:
+    name = (username or "").strip()
+    if not name:
+        return None
+    row = get_staff_by_login(name)
+    if row:
+        return row
+    rows = _conn().execute("SELECT * FROM staff WHERE name=?", (name,)).fetchall()
+    if len(rows) == 1:
+        return dict(rows[0])
+    return None
 
 
 def list_staff() -> list[dict]:
