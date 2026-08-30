@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="booting">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,6 +29,7 @@ body{
 button{font-family:inherit;border:none;cursor:pointer}
 a{color:var(--action);text-decoration:none}
 .hidden{display:none!important}
+html.booting #login,html.booting #app{display:none!important}
 .skip{
   position:absolute;left:12px;top:-40px;z-index:80;
   background:var(--ink);color:#fff;padding:8px 12px;border-radius:var(--radius);
@@ -517,7 +518,7 @@ html.admin-night .card.loading::after{background:rgba(42,48,60,.8)}
 <a class="skip" href="#crumbNow" data-i18n="skip">跳到主内容</a>
 <div id="toast" role="status"></div>
 
-<div id="login">
+<div id="login" class="hidden">
   <h1 data-i18n="login.title">运营中台</h1>
   <p><span data-i18n="login.lead">客服平台 · 会话 24 小时有效。坐席请走</span> <a href="/desk" data-i18n="login.desk">工作台</a>。</p>
   <form id="loginForm">
@@ -886,6 +887,35 @@ html.admin-night .card.loading::after{background:rgba(42,48,60,.8)}
     </main>
   </div>
 </div>
+<script>
+(function(){
+  try {
+    if (sessionStorage.getItem('xiaomei_admin_in') !== '1') return;
+    var s = JSON.parse(sessionStorage.getItem('xiaomei_admin_paint') || 'null');
+    if (!s || !s.statGrid) return;
+    var put = function(id, html, text) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      if (html != null) el.innerHTML = html;
+      else if (text != null) el.textContent = text;
+    };
+    put('brandMark', s.brandMark);
+    document.querySelectorAll('.brand-name').forEach(function(n){ if (s.brandName) n.textContent = s.brandName; });
+    put('topAvatar', s.topAvatar);
+    put('dropUserName', s.dropUserName);
+    put('statGrid', s.statGrid);
+    put('trafficSub', null, s.trafficSub);
+    put('trafficRange', null, s.trafficRange);
+    put('trafficChart', s.trafficChart);
+    put('trafficFoot', s.trafficFoot);
+    put('socialRow', s.socialRow);
+    put('kwList', s.kwList);
+    var app = document.getElementById('app');
+    if (app) app.classList.remove('hidden');
+    document.documentElement.classList.remove('booting');
+  } catch (e) {}
+})();
+</script>
 
 <aside class="aside" id="aside" aria-label="动态面板" hidden>
   <div class="aside-head">
@@ -1226,7 +1256,32 @@ const api = async (path) => {
   return data;
 };
 
+function savePaint() {
+  try {
+    const mark = document.getElementById('brandMark');
+    const nameEl = document.querySelector('.brand-name');
+    sessionStorage.setItem('xiaomei_admin_paint', JSON.stringify({
+      brandMark: mark ? mark.innerHTML : '',
+      brandName: nameEl ? nameEl.textContent : '',
+      topAvatar: ($('#topAvatar') || {}).innerHTML || '',
+      dropUserName: ($('#dropUserName') || {}).innerHTML || '',
+      statGrid: ($('#statGrid') || {}).innerHTML || '',
+      trafficSub: ($('#trafficSub') || {}).textContent || '',
+      trafficRange: ($('#trafficRange') || {}).textContent || '',
+      trafficChart: ($('#trafficChart') || {}).innerHTML || '',
+      trafficFoot: ($('#trafficFoot') || {}).innerHTML || '',
+      socialRow: ($('#socialRow') || {}).innerHTML || '',
+      kwList: ($('#kwList') || {}).innerHTML || '',
+    }));
+  } catch (e) {}
+}
+
 function showLogin() {
+  try {
+    sessionStorage.removeItem('xiaomei_admin_in');
+    sessionStorage.removeItem('xiaomei_admin_paint');
+  } catch (e) {}
+  document.documentElement.classList.remove('booting', 'in');
   $('#login').classList.remove('hidden');
   $('#app').classList.add('hidden');
   $('#loginBtn').disabled = false;
@@ -1379,18 +1434,22 @@ function searchByKeyword(kw) {
   goMessages();
 }
 
-async function afterLogin() {
+async function afterLogin(me) {
   $('#err').textContent = '';
   try {
-    const me = await api('me');
+    if (!me) me = await api('me');
     if (me.role === 'agent') { location.href = '/desk'; return; }
     if ($('#dropUserName')) $('#dropUserName').innerHTML = esc(me.name || t('staff.admin')) + '<small id="dropUserState">' + t('doc.title') + '</small>';
-  } catch (e) {}
+  } catch (e) {
+    if (e.message === 'unauth') return;
+  }
+  try { sessionStorage.setItem('xiaomei_admin_in', '1'); } catch (e) {}
+  applyUiLang();
+  await Promise.all([loadAppearance(), loadForTab(currentTab)]);
+  savePaint();
   $('#app').classList.remove('hidden');
   $('#login').classList.add('hidden');
-  applyUiLang();
-  loadAppearance();
-  loadForTab(currentTab);
+  document.documentElement.classList.remove('booting');
   startPoll();
 }
 
@@ -1657,6 +1716,7 @@ async function loadDashboard() {
     $('#kwList').innerHTML = kws.length
       ? kws.map(([k, n]) => `<button type="button" class="keyword" data-kw="${esc(k)}">${esc(k)} <b>${n}</b></button>`).join('')
       : `<span style="color:var(--ink-muted)">${t('dash.no_kw')}</span>`;
+    savePaint();
   } catch (e) {
     if (e.message === 'unauth') return;
     toast(t('fail.dash'));
@@ -1714,6 +1774,7 @@ function paintAppearance(cfg, ops) {
   if (state) state.textContent = on ? (lock ? t('user.state_24') : t('user.state_on')) : t('user.state_off');
   syncOnlineLock(lock, on);
   setChatBgPicker(cfg.chat_bg || '#f2f2f7');
+  savePaint();
 }
 
 async function loadAppearance() {
@@ -2192,8 +2253,18 @@ async function loadReports() {
 
 (async () => {
   applyUiLang();
-  try { await api('visitors'); afterLogin(); }
-  catch (e) { showLogin(); }
+  const stuck = setTimeout(() => {
+    if (document.documentElement.classList.contains('booting')) showLogin();
+  }, 8000);
+  try {
+    const me = await api('me');
+    clearTimeout(stuck);
+    if (me.role === 'agent') { location.href = '/desk'; return; }
+    await afterLogin(me);
+  } catch (e) {
+    clearTimeout(stuck);
+    showLogin();
+  }
 })();
 </script>
 </body>

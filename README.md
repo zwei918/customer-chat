@@ -18,8 +18,8 @@
 ## 当前状态
 
 - 状态：进行中（V1 本机可运行：访客 H5 + 坐席工作台 + 运营中台）
-- 最近更新：2026-08-29
-- 下一步：本机已收紧聊天页顶底留白、后台可切中/英、看板与铃铛下拉已修。改完必须推 `zwei918/customer-chat` 再部署，线上才能看到。上线前服务器仍要配齐 `ADMIN_PASSWORD` + `ADMIN_SECRET`（禁止默认 `changeme-secret`）。
+- 最近更新：2026-08-30
+- 下一步：现行版已对齐 GitHub `zwei918/customer-chat`。线上 `chat.okva.cc` / `admin01.okva.cc` 还要部署后才换文件。上线前服务器仍要配齐 `ADMIN_PASSWORD` + `ADMIN_SECRET`（禁止默认 `changeme-secret`）。
 - 视觉：聊天页苹果原则；后台按 Figma CoreUI 骨架。顶栏七个图标和运营看板都接 H5 真实会话，不搬稿里的交通图和社交假数据。
 
 ## 目录说明
