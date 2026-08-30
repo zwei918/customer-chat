@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#212631">
 <meta name="robots" content="noindex, nofollow">
 <title>运营中台</title>
-<script>try{sessionStorage.removeItem('xiaomei_admin_paint')}catch(e){}</script>
+<script>try{sessionStorage.removeItem('xiaomei_admin_paint');sessionStorage.removeItem('xiaomei_admin_in')}catch(e){}</script>
 <style>
 :root{
   --sidebar:#212631; --sidebar-line:#323a49; --sidebar-text:rgba(255,255,255,.87);
@@ -1229,11 +1229,8 @@ const api = async (path) => {
 };
 
 function showLogin() {
-  try {
-    sessionStorage.removeItem('xiaomei_admin_in');
-    sessionStorage.removeItem('xiaomei_admin_paint');
-  } catch (e) {}
-  document.documentElement.classList.remove('booting', 'in');
+  try { sessionStorage.removeItem('xiaomei_admin_paint'); } catch (e) {}
+  document.documentElement.classList.remove('booting');
   $('#login').classList.remove('hidden');
   $('#app').classList.add('hidden');
   $('#loginBtn').disabled = false;
@@ -1395,7 +1392,6 @@ async function afterLogin(me) {
   } catch (e) {
     if (e.message === 'unauth') return;
   }
-  try { sessionStorage.setItem('xiaomei_admin_in', '1'); } catch (e) {}
   applyUiLang();
   await Promise.all([loadAppearance(), loadForTab(currentTab)]);
   $('#app').classList.remove('hidden');
